@@ -50,6 +50,10 @@ RNA_TIME_LIMIT=90 uv run jupyter nbconvert --to notebook --execute \
 `RNA_TIME_LIMIT` (seconds, default 600) caps AutoGluon's training time; keep
 it low for a smoke test and raise it for a real training run.
 
+The notebook is committed executed, so its figures and metrics can be read
+directly on GitHub. Those results come from a full run with the default time
+limit.
+
 ## Data
 
 `dataset.parquet` holds 262,317 rows x 58 columns, one row per shipment

@@ -28,7 +28,9 @@ RNA_TIME_LIMIT=90 uv run jupyter nbconvert --to notebook --execute \
   --output executed.ipynb --ExecutePreprocessor.timeout=1800
 ```
 
-`RNA_TIME_LIMIT` (seconds, default 600) caps AutoGluon's `fit` time inside the notebook. The notebook is committed without outputs; a headless run must write its executed copy to an output directory outside `notebooks/` (`--output-dir` above), never back into `notebooks/`.
+`RNA_TIME_LIMIT` (seconds, default 600) caps AutoGluon's `fit` time inside the notebook. A smoke test must write its executed copy to an output directory outside `notebooks/` (`--output-dir` above): the committed notebook holds the results of a full run and a 90-second run must not replace them.
+
+Never use `jupyter nbconvert --clear-output` to make a stripped copy: it implies `--inplace`, ignores `--output-dir`, and erases the outputs of the working notebook.
 
 `pyproject.toml` defines the project's uv environment (`autogluon-tabular[fastai]`, `pandas`, `pyarrow`, `matplotlib`, `seaborn`, plus a `dev` group with `jupyterlab` and `ipykernel`). There is no lint or test setup.
 
@@ -80,4 +82,4 @@ Non-obvious rules the notebook (and any future inference script) must keep. Full
 
 ## Generated directories
 
-`AutogluonModels/` (trained model artifacts) is gitignored. `notebooks/*.ipynb` are committed with outputs and execution counts stripped; verify with a headless `nbconvert --execute` run (see Commands) before committing a notebook change.
+`AutogluonModels/` (trained model artifacts) is gitignored. `notebooks/*.ipynb` are committed **executed, with outputs**, so the figures and metrics render on GitHub. Commit a notebook only after a clean top-to-bottom run with the default `RNA_TIME_LIMIT`; do not commit partial or out-of-order executions.
