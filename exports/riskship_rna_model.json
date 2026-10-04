@@ -1,0 +1,40 @@
+{
+  "seed": 46,
+  "source_dir": "AutogluonModels/rna_shipment_loss/seed_46",
+  "model_best": "WeightedEnsemble_L2",
+  "validation_pr_auc": 0.7670526425450775,
+  "eval_metric": "average_precision",
+  "label": "is_lost",
+  "features": [
+    "PICKING_TYPE",
+    "SHP_LG_FACILITY_ID",
+    "DOM_DOMAIN_ID",
+    "ORD_CATEGORY_NAME_L1",
+    "BRAND_NAME",
+    "TIPO_BULKY",
+    "PESO_TOTAL_KG",
+    "DIM_MAX_CM",
+    "VALOR_TOTAL_USD",
+    "CANTIDAD_ITEMS",
+    "RATIO_SVC_MES_ANTERIOR",
+    "ES_BULKY",
+    "day_of_week"
+  ],
+  "day_of_week_categories": [
+    "lunes",
+    "martes",
+    "miércoles",
+    "jueves",
+    "viernes",
+    "sábado",
+    "domingo"
+  ],
+  "pickle_bytes": 3454891,
+  "versions": {
+    "python": "3.12.13",
+    "autogluon.tabular": "1.6.3",
+    "torch": "2.10.0",
+    "pandas": "2.3.3",
+    "numpy": "2.5.3"
+  }
+}

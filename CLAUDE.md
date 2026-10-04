@@ -20,6 +20,18 @@ uv sync                # create .venv from pyproject.toml + uv.lock
 uv run jupyter lab     # exploration notebooks
 ```
 
+```bash
+uv run export_model.py   # best-validation seed from AutogluonModels/ -> exports/riskship_rna_model.pickle + .json
+```
+
+`export_model.py` runs in the project environment (it needs AutoGluon). An AutoGluon predictor is a directory, not a file: it calls `persist(models="all")` so the pickle carries the networks and predicts without `AutogluonModels/`, then verifies the round trip in a fresh interpreter with the source directory temporarily renamed. The pickle is only loadable with the library versions recorded in the sidecar JSON.
+
+```bash
+uv run predict_risk.py --shipment-id 46411999224   # or a JSON file / '-' for stdin; --threshold 0.65 default
+```
+
+`predict_risk.py` is the inference entry point consumed by the Hermes agent profile at `~/.hermes/profiles/riskship` (skill `riesgo-envio`, script `skills/riesgo-envio/scripts/evaluar_riesgo.sh`), which creates a Linear issue per shipment above the threshold. It imports `prepare_features` from `export_model.py`, so keep the two derived features (`TIPO_BULKY` fill, `day_of_week`) in sync with the notebook's `preprocess`. Scores are on the case-control sample scale, never production probabilities.
+
 Run the notebook headlessly (smoke test or CI):
 
 ```bash

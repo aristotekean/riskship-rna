@@ -13,6 +13,8 @@ cashout amount) is treated as label leakage and excluded.
 - `dataset.parquet`, `dataset_dictionary.md` -- generated dataset and its column/type dictionary. Committed, never hand-edited.
 - `notebooks/rna_shipment_loss.ipynb` -- exploration, cleaning, training, and evaluation of the loss-prediction model.
 - `AutogluonModels/` -- trained model artifacts (generated, gitignored).
+- `export_model.py` -- exports the best per-seed predictor as one self-contained pickle into `exports/`.
+- `predict_risk.py` -- scores shipments (JSON or dataset rows) with the exported pickle and flags the ones above a risk threshold.
 - `informe/` -- the project report in IEEE format (`riskship_rna.tex`, LaTeX, in Spanish) and `figuras/`, exported by the notebook. Compile with `cd informe && Rscript -e 'tinytex::pdflatex("riskship_rna.tex")'`.
 
 ## Requirements and setup
@@ -58,6 +60,38 @@ figures.
 The notebook is committed executed, so its figures and metrics can be read
 directly on GitHub. Those results come from a full run with the default time
 limit and seed count.
+
+Export the best trained model as a single self-contained pickle:
+
+```bash
+uv run export_model.py                     # -> exports/riskship_rna_model.pickle (+ .json)
+uv run export_model.py --seed 46 --out model.pickle
+```
+
+The script reads the per-seed predictors the notebook left under
+`AutogluonModels/`, picks the seed with the best **validation** PR-AUC (the same
+rule the notebook uses for its reference model), loads every network into
+memory and pickles the whole predictor, so the file predicts without the
+model directory. It then reloads the pickle in a fresh interpreter with that
+directory hidden and requires identical scores. The sidecar `.json` records
+the seed, feature list and library versions: unpickling needs the same
+`autogluon.tabular`, `torch`, `fastai` and `pandas` versions. Use
+`export_model.prepare_features` to derive `day_of_week` and fill `TIPO_BULKY`
+from a raw export before calling `predict_proba`.
+
+Score shipments with the exported model from the command line (this is what
+the Hermes agent profile `riskship` calls through its `riesgo-envio` skill):
+
+```bash
+uv run predict_risk.py shipment.json              # JSON object or list of objects
+uv run predict_risk.py --shipment-id 46411999224  # a row from dataset.parquet
+uv run predict_risk.py --sample 3 --threshold 0.65
+```
+
+It prints one JSON document with the loss probability per shipment and an
+`at_risk` flag against the threshold (default 0.65). The probability is on the
+scale of the case-control sample, not of production prevalence (see "How to
+read these numbers" below).
 
 ## Data
 
