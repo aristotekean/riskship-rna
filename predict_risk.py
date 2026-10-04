@@ -79,6 +79,7 @@ def score(predictor, shipments: pd.DataFrame, threshold: float) -> dict:
             "loss_probability": round(float(p), 4),
             "at_risk": bool(p > threshold),
             "actual_is_lost": None if "is_lost" not in row or pd.isna(row["is_lost"]) else int(row["is_lost"]),
+            "date_status_0": None if pd.isna(row["date_status_0"]) else str(pd.Timestamp(row["date_status_0"])),
             "features": {c: (None if pd.isna(row[c]) else row[c]) for c in features if c in row.index},
         })
     return {
