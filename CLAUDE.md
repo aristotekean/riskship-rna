@@ -30,7 +30,13 @@ uv run export_model.py   # best-validation seed from AutogluonModels/ -> exports
 uv run predict_risk.py --shipment-id 46411999224   # or a JSON file / '-' for stdin; --threshold 0.65 default
 ```
 
-`predict_risk.py` is the inference entry point consumed by the Hermes agent profile at `~/.hermes/profiles/riskship` (skill `riesgo-envio`, script `skills/riesgo-envio/scripts/evaluar_riesgo.sh`), which creates a Linear issue per shipment above the threshold. It imports `prepare_features` from `export_model.py`, so keep the two derived features (`TIPO_BULKY` fill, `day_of_week`) in sync with the notebook's `preprocess`. Scores are on the case-control sample scale, never production probabilities.
+`predict_risk.py` is the inference entry point. The Hermes agent profile at `~/.hermes/profiles/riskship` (skill `riesgo-envio`) ships its **own copy** of the pickle, the sidecar JSON and a standalone PEP 723 version of this script under `skills/riesgo-envio/`, so it runs without this repository; after re-exporting the model, copy `exports/riskship_rna_model.pickle` and `.json` into that skill's `model/` directory and mirror any change to the feature derivation in its `scripts/predict_risk.py`. `predict_risk.py` here imports `prepare_features` from `export_model.py`; keep the two derived features (`TIPO_BULKY` fill, `day_of_week`) in sync with the notebook's `preprocess`. Scores are on the case-control sample scale, never production probabilities.
+
+```bash
+NEON_DATABASE_URL=postgresql://... uv run load_neon.py   # dataset.parquet -> Neon table shipments (needs write access)
+```
+
+`load_neon.py` is a PEP 723 script (`pyarrow`, `psycopg[binary]`) that runs `sql/shipments.sql` and COPYs the parquet into Neon. The table mirrors the parquet's 58 columns (quoted, case preserved) plus `id bigserial` (the Hermes cron's watermark) and `created_at`; if `unify_datos.py` changes the columns, regenerate the DDL from the parquet schema. The Hermes profile's `scripts/neon_fetch_shipments.sh` only selects the 13 model features and `date_status_0` by their exact quoted names.
 
 Run the notebook headlessly (smoke test or CI):
 

@@ -15,6 +15,7 @@ cashout amount) is treated as label leakage and excluded.
 - `AutogluonModels/` -- trained model artifacts (generated, gitignored).
 - `export_model.py` -- exports the best per-seed predictor as one self-contained pickle into `exports/`.
 - `predict_risk.py` -- scores shipments (JSON or dataset rows) with the exported pickle and flags the ones above a risk threshold.
+- `load_neon.py`, `sql/shipments.sql` -- create the `shipments` table in Neon (a mirror of `dataset.parquet`) and bulk-load it; the Hermes `riskship` profile reads it from a cron job.
 - `informe/` -- the project report in IEEE format (`riskship_rna.tex`, LaTeX, in Spanish) and `figuras/`, exported by the notebook. Compile with `cd informe && Rscript -e 'tinytex::pdflatex("riskship_rna.tex")'`.
 
 ## Requirements and setup
@@ -79,8 +80,9 @@ the seed, feature list and library versions: unpickling needs the same
 `export_model.prepare_features` to derive `day_of_week` and fill `TIPO_BULKY`
 from a raw export before calling `predict_proba`.
 
-Score shipments with the exported model from the command line (this is what
-the Hermes agent profile `riskship` calls through its `riesgo-envio` skill):
+Score shipments with the exported model from the command line (the Hermes
+agent profile `riskship` ships its own copy of the pickle and of this script in
+its `riesgo-envio` skill; copy `exports/` there after re-exporting):
 
 ```bash
 uv run predict_risk.py shipment.json              # JSON object or list of objects
@@ -92,6 +94,17 @@ It prints one JSON document with the loss probability per shipment and an
 `at_risk` flag against the threshold (default 0.65). The probability is on the
 scale of the case-control sample, not of production prevalence (see "How to
 read these numbers" below).
+
+Mirror the dataset into Neon for the Hermes agent's hourly cron (`riesgo-envio-neon`):
+
+```bash
+NEON_DATABASE_URL='postgresql://...' uv run load_neon.py   # role with write access
+```
+
+`sql/shipments.sql` has the same 58 columns as the parquet (quoted, case preserved)
+plus `id` (the cron's watermark) and `created_at`. `load_neon.py` is a PEP 723
+script (`pyarrow`, `psycopg`), so `uv run` resolves it outside the project env.
+Regenerate the DDL if the dataset's columns change.
 
 ## Data
 
