@@ -6,6 +6,8 @@ creation, before dispatch**, so only information available at that moment is
 used as a feature; anything recorded later (tracking status, loss cause,
 cashout amount) is treated as label leakage and excluded.
 
+![Riskship architecture](docs/images/1-riskship-architecture.png)
+
 ## Repository layout
 
 - `datos/` -- raw CSV/JSON exports (input).
@@ -16,6 +18,7 @@ cashout amount) is treated as label leakage and excluded.
 - `export_model.py` -- exports the best per-seed predictor as one self-contained pickle into `exports/`.
 - `predict_risk.py` -- scores shipments (JSON or dataset rows) with the exported pickle and flags the ones above a risk threshold.
 - `load_neon.py`, `sql/shipments.sql` -- create the `shipments` table in Neon (a mirror of `dataset.parquet`) and bulk-load it; the Hermes `riskship` profile reads it from a cron job.
+- `docs/images/` -- architecture diagram embedded in this README.
 - `informe/` -- the project report in IEEE format (`riskship_rna.tex`, LaTeX, in Spanish) and `figuras/`, exported by the notebook. Compile with `cd informe && Rscript -e 'tinytex::pdflatex("riskship_rna.tex")'`.
 
 ## Requirements and setup
