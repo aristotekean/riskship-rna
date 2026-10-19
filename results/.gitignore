@@ -1,0 +1,3 @@
+# Encoders contain corporate category mappings; keep model bundles local.
+**/private_models/
+notebook_smoke/

@@ -1,0 +1,129 @@
+{
+  "experiment": "gp_smoke_test",
+  "seed": 42,
+  "data": {
+    "path_used": "dataset.parquet",
+    "raw_rows": 262317,
+    "clean_rows": 165002,
+    "fitness_rows": 2500
+  },
+  "split": {
+    "train": {
+      "months": [
+        "2025-09",
+        "2025-10",
+        "2025-11",
+        "2025-12",
+        "2026-01"
+      ],
+      "rows": 125082,
+      "shipments": 112303,
+      "positive_rate": 0.3896483906557298
+    },
+    "validation": {
+      "months": [
+        "2026-02"
+      ],
+      "rows": 18831,
+      "shipments": 17297,
+      "positive_rate": 0.3163931814561096
+    },
+    "test": {
+      "months": [
+        "2026-03"
+      ],
+      "rows": 21089,
+      "shipments": 19506,
+      "positive_rate": 0.31210583716629525
+    },
+    "shared_shipment_groups": 0
+  },
+  "preprocessing": {
+    "categorical_encoding": "train-only frequency encoding; unknown=0",
+    "numeric_scaling": "train-only median/IQR",
+    "score_is_probability": false,
+    "features": [
+      "PICKING_TYPE",
+      "SHP_LG_FACILITY_ID",
+      "DOM_DOMAIN_ID",
+      "ORD_CATEGORY_NAME_L1",
+      "BRAND_NAME",
+      "TIPO_BULKY",
+      "PESO_TOTAL_KG",
+      "DIM_MAX_CM",
+      "VALOR_TOTAL_USD",
+      "CANTIDAD_ITEMS",
+      "RATIO_SVC_MES_ANTERIOR",
+      "ES_BULKY",
+      "day_of_week"
+    ],
+    "dom_domain_id_included": true
+  },
+  "gp": {
+    "population": 60,
+    "generations": 5,
+    "crossover_probability": 0.8,
+    "mutation_probability": 0.2,
+    "tournament_size": 4,
+    "max_height": 8,
+    "penalty": 0.0001,
+    "fitness": "average_precision - penalty * node_count",
+    "best_tree": "add(sub(x1, x5), x9)",
+    "best_nodes": 5,
+    "best_height": 2,
+    "primitive_set": "<deap.gp.PrimitiveSet object at 0x000001A58005EF00>"
+  },
+  "validation": {
+    "selected_threshold_on_validation": 0.3638850889192886,
+    "f1_at_selected_threshold": 0.5464109734984685,
+    "pr_auc": 0.5257467269534508,
+    "roc_auc": 0.7031862606854106,
+    "recall": 0.6886539107082914,
+    "precision": 0.45286975717439293,
+    "f1": 0.5464109734984685,
+    "confusion_matrix": [
+      [
+        7916,
+        4957
+      ],
+      [
+        1855,
+        4103
+      ]
+    ],
+    "recall_at_1%": 0.022994293387042633,
+    "precision_at_1%": 0.7287234042553191,
+    "recall_at_5%": 0.10808996307485734,
+    "precision_at_5%": 0.6836518046709129,
+    "recall_at_10%": 0.20560590802282644,
+    "precision_at_10%": 0.6505576208178439,
+    "recall_at_20%": 0.37378314870762,
+    "precision_at_20%": 0.591343600637281
+  },
+  "test": {
+    "pr_auc": 0.5479362840479773,
+    "roc_auc": 0.7245242643892175,
+    "recall": 0.7174111212397447,
+    "precision": 0.4588029537504858,
+    "f1": 0.5596776105250681,
+    "confusion_matrix": [
+      [
+        8937,
+        5570
+      ],
+      [
+        1860,
+        4722
+      ]
+    ],
+    "recall_at_1%": 0.024308720753570344,
+    "precision_at_1%": 0.7582938388625592,
+    "recall_at_5%": 0.11637800060771802,
+    "precision_at_5%": 0.7267552182163188,
+    "recall_at_10%": 0.21756305074445456,
+    "precision_at_10%": 0.6789947842579421,
+    "recall_at_20%": 0.38210270434518384,
+    "precision_at_20%": 0.5962541488857278
+  },
+  "elapsed_seconds": 6.553124400000343
+}
