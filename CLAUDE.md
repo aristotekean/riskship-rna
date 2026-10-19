@@ -102,7 +102,7 @@ Non-obvious rules the notebook (and any future inference script) must keep. Full
 
 ## Reported results
 
-The project report quotes these numbers, so they are recorded here and in `README.md` ("Experimental protocol and results", which has the full tables). They come from the committed notebook run with the defaults (`RNA_TIME_LIMIT=600`, `RNA_N_SEEDS=5`). **If a re-run changes any of them, update the notebook, `README.md`, and this section in the same commit** -- never leave the docs quoting numbers the committed notebook no longer shows.
+The project report quotes these numbers, so they are recorded here and in `README.md` ("Protocolo experimental y resultados (RNA)", which has the full tables). They come from the committed notebook run with the defaults (`RNA_TIME_LIMIT=600`, `RNA_N_SEEDS=5`). **If a re-run changes any of them, update the notebook, `README.md`, and this section in the same commit** -- never leave the docs quoting numbers the committed notebook no longer shows.
 
 - **Seeds**: 5 seeds, 42-46 (`SEEDS = [RANDOM_STATE + i for i in range(N_SEEDS)]`). A seed only changes network training: `seed_value` for `NN_TORCH`, `random_seed` for `FASTAI` (AutoGluon names them differently per model, and defaults both to 0 if unset). The partition and test set are identical across seeds. Dispersion is the sample standard deviation (`ddof=1`). Fewer than 5 seeds is a smoke test, not a reportable result.
 - **Partition**: train 2025-09..2026-01 (125,082 rows, 39.0% positive), validation 2026-02 (18,831 rows, 31.6%), test 2026-03 (21,089 rows, 31.2%). Clean dataset: 165,002 rows.

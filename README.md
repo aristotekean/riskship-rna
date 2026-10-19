@@ -1,52 +1,85 @@
 # riskship-rna
 
-Data preparation and model training for a shipment-loss neural network (RNA
-= "red neuronal artificial"). The model predicts `is_lost` **at shipment
-creation, before dispatch**, so only information available at that moment is
-used as a feature; anything recorded later (tracking status, loss cause,
-cashout amount) is treated as label leakage and excluded.
+Preparación de datos y entrenamiento de una red neuronal artificial (RNA) que
+predice la pérdida de envíos. El modelo estima `is_lost` **al crear el envío,
+antes del despacho**, de modo que solo usa como variables la información
+disponible en ese momento; todo lo registrado después (estado de seguimiento,
+causa de la pérdida, monto reembolsado) se trata como fuga de la etiqueta y se
+excluye. Está pensado como herramienta de priorización: ordenar los envíos
+nuevos para que un equipo revise primero los de mayor riesgo. El repositorio
+contiene el pipeline de datos, el notebook de entrenamiento, los scripts de
+exportación e inferencia, un segundo enfoque con programación genética (GP) y
+los informes que documentan ambos.
 
-![Riskship architecture](docs/images/1-riskship-architecture.png)
+![Arquitectura de Riskship](docs/images/1-riskship-architecture.png)
 
-## Repository layout
+## Ruta rápida
 
-- `datos/` -- raw CSV/JSON exports (input).
-- `unify_datos.py` -- PEP 723 script that unifies `datos/` into `dataset.parquet` (polars, own inline dependencies).
-- `dataset.parquet`, `dataset_dictionary.md` -- generated dataset and its column/type dictionary. Committed, never hand-edited.
-- `notebooks/rna_shipment_loss.ipynb` -- exploration, cleaning, training, and evaluation of the loss-prediction model.
-- `AutogluonModels/` -- trained model artifacts (generated, gitignored).
-- `export_model.py` -- exports the best per-seed predictor as one self-contained pickle into `exports/`.
-- `predict_risk.py` -- scores shipments (JSON or dataset rows) with the exported pickle and flags the ones above a risk threshold.
-- `load_neon.py`, `sql/shipments.sql` -- create the `shipments` table in Neon (a mirror of `dataset.parquet`) and bulk-load it; the Hermes `riskship` profile reads it from a cron job.
-- `docs/images/` -- architecture diagram embedded in this README.
-- `informe/` -- the project report in IEEE format (`riskship_rna.tex`, LaTeX, in Spanish) and `figuras/`, exported by the notebook. Compile with `cd informe && Rscript -e 'tinytex::pdflatex("riskship_rna.tex")'`.
+1. Crear el entorno: `uv sync`.
+2. Generar el dataset desde las exportaciones crudas: `uv run unify_datos.py`.
+3. Entrenar y evaluar la RNA: `uv run jupyter lab` y ejecutar
+   `notebooks/rna_shipment_loss.ipynb` de arriba abajo (o la ejecución sin
+   interfaz descrita en [Uso](#uso)).
+4. Exportar el mejor modelo y puntuar envíos: `uv run export_model.py` y
+   `uv run predict_risk.py --shipment-id 46411999224`.
+5. Compilar los informes:
+   `cd informe && Rscript -e 'tinytex::pdflatex("riskship_rna.tex")'` y
+   `cd papers && Rscript -e 'tinytex::pdflatex("riskship_gp.tex")'`.
 
-## Requirements and setup
+Las cifras que el informe debe citar están en
+[Protocolo experimental y resultados (RNA)](#protocolo-experimental-y-resultados-rna);
+las reglas que ningún cambio debe romper, en `CLAUDE.md`.
+
+## Estructura del repositorio
+
+| Ruta | Contenido |
+|---|---|
+| `datos/` | Exportaciones crudas en CSV/JSON (entrada). |
+| `unify_datos.py` | Script PEP 723 que unifica `datos/` en `dataset.parquet` (polars, dependencias declaradas en el propio archivo). |
+| `dataset.parquet`, `dataset_dictionary.md` | Dataset generado y su diccionario de columnas y tipos. Se versionan, pero nunca se editan a mano. |
+| `notebooks/rna_shipment_loss.ipynb` | Exploración, limpieza, entrenamiento y evaluación del modelo de pérdida (RNA). |
+| `notebooks/gp_shipment_loss.ipynb` | Notebook autocontenido del enfoque de programación genética. |
+| `AutogluonModels/` | Artefactos de los modelos entrenados (generados, excluidos del control de versiones). |
+| `export_model.py` | Exporta el mejor predictor por semilla como un único pickle autocontenido en `exports/`. |
+| `predict_risk.py` | Puntúa envíos (JSON o filas del dataset) con el pickle exportado y marca los que superan el umbral de riesgo. |
+| `load_neon.py`, `sql/shipments.sql` | Crean la tabla `shipments` en Neon (espejo de `dataset.parquet`) y la cargan en bloque; el perfil `riskship` del agente Hermes la lee desde un cron. |
+| `gp_full_experiment.py`, `tests/` | Experimento GP completo y sus pruebas (ver [Programación genética (GP)](#programación-genética-gp)). |
+| `docs/images/` | Diagrama de arquitectura incluido en este README. |
+| `docs/GP_ENTRENAMIENTO_COMPLETO.md`, `docs/GP_EXPERIMENTOS.md` | Metodología, resultados y límites del enfoque GP. |
+| `results/gp_full_v1/` | Métricas agregadas por semilla del experimento GP. |
+| `informe/` | Informe del proyecto en formato IEEE (`riskship_rna.tex`, LaTeX, en español) y `figuras/`, exportadas por el notebook. |
+| `papers/` | Artículo del enfoque GP (`riskship_gp.tex`, `riskship_gp.pdf`) y `figuras/`. |
+
+## Requisitos y entorno
 
 ```bash
 uv sync
 ```
 
-Python is pinned to 3.12 (`.python-version`, `requires-python = ">=3.12,<3.14"`
-in `pyproject.toml`). This is a hard constraint of `autogluon-tabular` 1.6.3,
-which requires Python `<3.14` and `pandas<2.4`; do not bump either without
-first checking AutoGluon's supported ranges.
+Python está fijado en 3.12 (`.python-version`, `requires-python = ">=3.12,<3.14"`
+en `pyproject.toml`). Es una restricción dura de `autogluon-tabular` 1.6.3, que
+exige Python `<3.14` y `pandas<2.4`; no se debe subir ninguna de las dos
+versiones sin comprobar antes los rangos que AutoGluon admite.
 
-## Usage
+## Uso
 
-Rebuild the dataset from the raw exports:
+### Generar el dataset
+
+Reconstruir el dataset a partir de las exportaciones crudas:
 
 ```bash
 uv run unify_datos.py
 ```
 
-Open the notebook interactively:
+### Ejecutar el notebook
+
+Abrirlo de forma interactiva:
 
 ```bash
 uv run jupyter lab
 ```
 
-Run it headlessly (for CI or a quick smoke test):
+Ejecutarlo sin interfaz (para CI o una prueba rápida de humo):
 
 ```bash
 RNA_TIME_LIMIT=90 RNA_N_SEEDS=2 RNA_FIGURES_DIR=<output-dir>/figuras uv run jupyter nbconvert --to notebook --execute \
@@ -54,38 +87,47 @@ RNA_TIME_LIMIT=90 RNA_N_SEEDS=2 RNA_FIGURES_DIR=<output-dir>/figuras uv run jupy
   --output executed.ipynb --ExecutePreprocessor.timeout=1800
 ```
 
-`RNA_TIME_LIMIT` (seconds, default 600) caps AutoGluon's training time **per
-seed**, and `RNA_N_SEEDS` (default 5) sets how many seeds are trained; keep
-both low for a smoke test. Every figure is also exported at 300 dpi to
-`RNA_FIGURES_DIR` (default `informe/figuras/`, which the report includes), so
-a smoke test must point it somewhere else or it overwrites the report's
-figures.
+| Variable | Efecto |
+|---|---|
+| `RNA_TIME_LIMIT` | Segundos (600 por defecto) que limitan el entrenamiento de AutoGluon **por semilla**. |
+| `RNA_N_SEEDS` | Número de semillas a entrenar (5 por defecto). |
+| `RNA_FIGURES_DIR` | Directorio al que se exporta cada figura a 300 dpi (`informe/figuras/` por defecto, que es lo que incluye el informe). |
 
-The notebook is committed executed, so its figures and metrics can be read
-directly on GitHub. Those results come from a full run with the default time
-limit and seed count.
+Para una prueba de humo, mantener `RNA_TIME_LIMIT` y `RNA_N_SEEDS` bajos y
+apuntar `RNA_FIGURES_DIR` a otro directorio; de lo contrario sobrescribe las
+figuras del informe.
 
-Export the best trained model as a single self-contained pickle:
+El notebook se versiona ejecutado, de modo que sus figuras y métricas se leen
+directamente en GitHub. Esos resultados provienen de una ejecución completa con
+el límite de tiempo y el número de semillas por defecto.
+
+### Exportar el modelo
+
+Exportar el mejor modelo entrenado como un único pickle autocontenido:
 
 ```bash
 uv run export_model.py                     # -> exports/riskship_rna_model.pickle (+ .json)
 uv run export_model.py --seed 46 --out model.pickle
 ```
 
-The script reads the per-seed predictors the notebook left under
-`AutogluonModels/`, picks the seed with the best **validation** PR-AUC (the same
-rule the notebook uses for its reference model), loads every network into
-memory and pickles the whole predictor, so the file predicts without the
-model directory. It then reloads the pickle in a fresh interpreter with that
-directory hidden and requires identical scores. The sidecar `.json` records
-the seed, feature list and library versions: unpickling needs the same
-`autogluon.tabular`, `torch`, `fastai` and `pandas` versions. Use
-`export_model.prepare_features` to derive `day_of_week` and fill `TIPO_BULKY`
-from a raw export before calling `predict_proba`.
+El script lee los predictores por semilla que el notebook dejó en
+`AutogluonModels/`, elige la semilla con mejor PR-AUC en **validación** (la
+misma regla que el notebook usa para su modelo de referencia), carga todas las
+redes en memoria y serializa el predictor completo, de modo que el archivo
+predice sin el directorio del modelo. Después recarga el pickle en un
+intérprete nuevo con ese directorio oculto y exige puntuaciones idénticas. El
+`.json` adjunto registra la semilla, la lista de variables y las versiones de
+las librerías: deserializar requiere las mismas versiones de
+`autogluon.tabular`, `torch`, `fastai` y `pandas`. Usar
+`export_model.prepare_features` para derivar `day_of_week` y rellenar
+`TIPO_BULKY` a partir de una exportación cruda antes de llamar a
+`predict_proba`.
 
-Score shipments with the exported model from the command line (the Hermes
-agent profile `riskship` ships its own copy of the pickle and of this script in
-its `riesgo-envio` skill; copy `exports/` there after re-exporting):
+### Puntuar envíos
+
+Puntuar envíos con el modelo exportado desde la línea de comandos (el perfil
+`riskship` del agente Hermes lleva su propia copia del pickle y de este script
+en su skill `riesgo-envio`; copiar `exports/` allí después de reexportar):
 
 ```bash
 uv run predict_risk.py shipment.json              # JSON object or list of objects
@@ -93,187 +135,176 @@ uv run predict_risk.py --shipment-id 46411999224  # a row from dataset.parquet
 uv run predict_risk.py --sample 3 --threshold 0.65
 ```
 
-It prints one JSON document with the loss probability per shipment and an
-`at_risk` flag against the threshold (default 0.65). The probability is on the
-scale of the case-control sample, not of production prevalence (see "How to
-read these numbers" below).
+Imprime un único documento JSON con la probabilidad de pérdida por envío y una
+marca `at_risk` respecto al umbral (0,65 por defecto). La probabilidad está en
+la escala de la muestra caso-control, no de la prevalencia de producción (ver
+[Cómo leer estos números](#cómo-leer-estos-números)).
 
-Mirror the dataset into Neon for the Hermes agent's hourly cron (`riesgo-envio-neon`):
+### Cargar el dataset en Neon
+
+Replicar el dataset en Neon para el cron horario del agente Hermes
+(`riesgo-envio-neon`):
 
 ```bash
 NEON_DATABASE_URL='postgresql://...' uv run load_neon.py   # role with write access
 ```
 
-`sql/shipments.sql` has the same 58 columns as the parquet (quoted, case preserved)
-plus `id` (the cron's watermark) and `created_at`. `load_neon.py` is a PEP 723
-script (`pyarrow`, `psycopg`), so `uv run` resolves it outside the project env.
-Regenerate the DDL if the dataset's columns change.
+`sql/shipments.sql` tiene las mismas 58 columnas del parquet (entre comillas,
+con mayúsculas y minúsculas preservadas) más `id` (la marca de agua del cron) y
+`created_at`. `load_neon.py` es un script PEP 723 (`pyarrow`, `psycopg`), por
+lo que `uv run` lo resuelve fuera del entorno del proyecto. Regenerar el DDL si
+cambian las columnas del dataset.
 
-## Data
+## Datos
 
-`dataset.parquet` holds 262,317 rows x 58 columns, one row per shipment
-**item** (not per shipment -- a shipment with several items spans several
-rows; see `dataset_dictionary.md` for the full column list). The label is
-`is_lost` (Int, 0/1), about 24% positive before cleaning. After the notebook's
-cleaning steps (missingness-artifact rows dropped, restricted to the months
-where both classes are observed and the label has matured), the usable
-dataset is smaller and closer to a 37/63 split; see the notebook for the exact numbers, computed from the
-data rather than hardcoded here.
+`dataset.parquet` contiene 262.317 filas x 58 columnas, una fila por
+**artículo** del envío (no por envío: un envío con varios artículos ocupa
+varias filas; ver `dataset_dictionary.md` para la lista completa de columnas).
+La etiqueta es `is_lost` (Int, 0/1), con cerca de un 24 % de positivos antes de
+la limpieza. Tras los pasos de limpieza del notebook (eliminación de filas con
+artefactos de valores faltantes y restricción a los meses en que se observan
+ambas clases y la etiqueta ha madurado), el dataset utilizable es menor y se
+acerca a una proporción 37/63; los números exactos están en el notebook,
+calculados a partir de los datos y no fijados aquí.
 
-## Key modeling decisions
+## Decisiones de modelado clave
 
-| Decision | Why |
+| Decisión | Motivo |
 |---|---|
-| Prediction moment: at creation, before dispatch | Only columns known at that moment may be features; post-creation tracking/status/loss-cause columns are dropped. |
-| Leakage columns dropped (`CAUSA_BPP`, `CLASSIFICATION_LM`, `F_CLASIFICATION*`, `BPP_CASHOUT_USD`, `status_*`/`date_status_1..10`, ...) | Non-null in ~100% of lost rows and 0% of non-lost rows, or a post-dispatch timeline -- pure restatements of the label. |
-| `LG_REGION` dropped | The same facility is exported under different region names depending on the row's class, so the column encodes the label through an inconsistent taxonomy; `SHP_LG_FACILITY_ID` carries the geographic signal safely instead. |
-| Temporal window restricted to months where both classes exist and the label has matured | Recent months have zero lost labels because the label has not matured yet (extraction artifact), not because risk dropped to zero. A trailing month can hold a few positives and still be immature (2026-04: ~1% lost vs 31-47% before), so trailing months below `MATURITY_RATIO` x the median monthly lost rate are dropped too. |
-| No absolute date features, only day-of-week | Using year/month would let the model re-learn the sampling artifact above. |
-| Rows with null core numerics or null `date_status_0` dropped | These nulls are ~100% lost -- an artifact of how the two classes were extracted, not a real relationship. |
-| Temporal split by month of `date_status_0` (oldest months train, latest months validate and test) | No future information reaches training, and the test answers the operational question: how well does the model rank shipments that did not exist yet. Months are chosen from the data (`MIN_HOLDOUT_SHARE`). A shipment can span multiple item rows, so the notebook asserts no `SHIPMENT_ID` crosses partitions. |
-| Several seeds, fixed partition | Training repeats with `N_SEEDS` seeds on the same split and test set, so metrics are reported as mean and standard deviation instead of a single run. |
-| Ranking metrics (`recall_en_K`, `precision_en_K`) next to PR-AUC / ROC-AUC | The model is a prioritization tool: what matters is how many real losses fall inside the share of shipments a team can actually review. |
-| AutoGluon restricted to `NN_TORCH` + `FASTAI` | The goal is specifically a neural network, not AutoGluon's default tree ensemble. |
-| `eval_metric="average_precision"` | The label is imbalanced (~24% positive raw, about a third after cleaning); accuracy is misleadingly high for a model that just predicts the majority class. |
+| Momento de predicción: al crear el envío, antes del despacho | Solo las columnas conocidas en ese momento pueden ser variables; se eliminan las columnas de seguimiento, estado y causa de pérdida posteriores a la creación. |
+| Columnas con fuga eliminadas (`CAUSA_BPP`, `CLASSIFICATION_LM`, `F_CLASIFICATION*`, `BPP_CASHOUT_USD`, `status_*`/`date_status_1..10`, ...) | No nulas en ~100 % de las filas perdidas y 0 % de las no perdidas, o línea de tiempo posterior al despacho: reformulaciones puras de la etiqueta. |
+| `LG_REGION` eliminada | La misma instalación se exporta con distintos nombres de región según la clase de la fila, así que la columna codifica la etiqueta mediante una taxonomía inconsistente; `SHP_LG_FACILITY_ID` aporta la señal geográfica sin ese riesgo. |
+| Ventana temporal restringida a los meses con ambas clases y etiqueta madura | Los meses recientes tienen cero etiquetas de pérdida porque la etiqueta aún no ha madurado (artefacto de extracción), no porque el riesgo haya caído a cero. Un mes final puede tener unos pocos positivos y seguir inmaduro (2026-04: ~1 % perdidos frente a 31-47 % antes), así que también se eliminan los meses finales por debajo de `MATURITY_RATIO` x la mediana de la tasa mensual de pérdida. |
+| Sin variables de fecha absoluta, solo día de la semana | Usar año o mes permitiría al modelo reaprender el artefacto de muestreo anterior. |
+| Filas con nulos en los numéricos centrales o en `date_status_0` eliminadas | Esos nulos son ~100 % perdidos: un artefacto de cómo se extrajeron las dos clases, no una relación real. |
+| Partición temporal por mes de `date_status_0` (los meses más antiguos entrenan, los más recientes validan y prueban) | Ninguna información futura llega al entrenamiento, y el test responde la pregunta operativa: qué tan bien ordena el modelo envíos que aún no existían. Los meses se eligen a partir de los datos (`MIN_HOLDOUT_SHARE`). Un envío puede ocupar varias filas de artículo, por lo que el notebook verifica que ningún `SHIPMENT_ID` cruce particiones. |
+| Varias semillas, partición fija | El entrenamiento se repite con `N_SEEDS` semillas sobre la misma partición y el mismo test, por lo que las métricas se reportan como media y desviación estándar y no como una única ejecución. |
+| Métricas de ranking (`recall_en_K`, `precision_en_K`) junto a PR-AUC / ROC-AUC | El modelo es una herramienta de priorización: lo que importa es cuántas pérdidas reales caen dentro de la fracción de envíos que un equipo puede revisar. |
+| AutoGluon restringido a `NN_TORCH` + `FASTAI` | El objetivo es específicamente una red neuronal, no el ensamble de árboles por defecto de AutoGluon. |
+| `eval_metric="average_precision"` | La etiqueta está desbalanceada (~24 % positivos en crudo, cerca de un tercio tras la limpieza); la exactitud es engañosamente alta para un modelo que solo predice la clase mayoritaria. |
 
-## Experimental protocol and results
+## Protocolo experimental y resultados (RNA)
 
-These are the figures the project report must quote. They come from the
-committed notebook run (default `RNA_TIME_LIMIT=600`, `RNA_N_SEEDS=5`) and are
-computed on the held-out test month. If the notebook is re-run and any number
-changes, update this section and `CLAUDE.md` in the same commit.
+Estas son las cifras que el informe del proyecto debe citar. Provienen de la
+ejecución versionada del notebook (`RNA_TIME_LIMIT=600`, `RNA_N_SEEDS=5` por
+defecto) y se calculan sobre el mes de test reservado. Si el notebook se vuelve
+a ejecutar y cambia algún número, actualizar esta sección y `CLAUDE.md` en el
+mismo commit.
 
-### Protocol
+### Protocolo
 
-| Item | Value |
+| Elemento | Valor |
 |---|---|
-| Model | AutoGluon `TabularPredictor`, neural networks only: `NN_TORCH` (PyTorch MLP) + `FASTAI`, combined by a weighted ensemble; default hyperparameters |
-| Optimized metric | `average_precision` (PR-AUC) |
-| Clean dataset | 165,002 rows (items), 2025-09 to 2026-03, ~37% positive |
-| Split | Temporal, by month of `date_status_0`; months chosen from the data (`MIN_HOLDOUT_SHARE = 0.10`) |
-| Seeds | 5 seeds: 42, 43, 44, 45, 46 (`RANDOM_STATE = 42`, consecutive) |
-| What a seed changes | Only the networks' training (weight init, batch order, dropout): `seed_value` for `NN_TORCH`, `random_seed` for `FASTAI`. The partition and the test set are identical across seeds |
-| Dispersion | Sample standard deviation across the 5 seeds (`ddof = 1`) |
-| Classification threshold | 0.5 on the predicted probability, positive class = lost |
-| Reference model | Seed 46, chosen by best PR-AUC on **validation** (0.7671), never by test score |
-| Training cost | ~100 s per seed (78-128 s); wall-clock time, so it varies between runs while every metric below reproduces exactly. Early stopping ends well before the 600 s cap |
+| Modelo | AutoGluon `TabularPredictor`, solo redes neuronales: `NN_TORCH` (MLP en PyTorch) + `FASTAI`, combinadas por un ensamble ponderado; hiperparámetros por defecto |
+| Métrica optimizada | `average_precision` (PR-AUC) |
+| Dataset limpio | 165.002 filas (artículos), de 2025-09 a 2026-03, ~37 % positivos |
+| Partición | Temporal, por mes de `date_status_0`; meses elegidos a partir de los datos (`MIN_HOLDOUT_SHARE = 0.10`) |
+| Semillas | 5 semillas: 42, 43, 44, 45, 46 (`RANDOM_STATE = 42`, consecutivas) |
+| Qué cambia una semilla | Solo el entrenamiento de las redes (inicialización de pesos, orden de lotes, dropout): `seed_value` para `NN_TORCH`, `random_seed` para `FASTAI`. La partición y el test son idénticos entre semillas |
+| Dispersión | Desviación estándar muestral entre las 5 semillas (`ddof = 1`) |
+| Umbral de clasificación | 0,5 sobre la probabilidad predicha; clase positiva = perdido |
+| Modelo de referencia | Semilla 46, elegida por mejor PR-AUC en **validación** (0,7671), nunca por la puntuación de test |
+| Costo de entrenamiento | ~100 s por semilla (78-128 s); es tiempo de reloj, así que varía entre ejecuciones mientras todas las métricas siguientes se reproducen exactamente. La parada temprana termina mucho antes del tope de 600 s |
 
-| Partition | Months | Rows | Share | Shipments | Positive rate |
+| Partición | Meses | Filas | Proporción | Envíos | Tasa de positivos |
 |---|---|---|---|---|---|
-| Train | 2025-09 to 2026-01 | 125,082 | 75.8% | 112,303 | 39.0% |
-| Validation | 2026-02 | 18,831 | 11.4% | 17,297 | 31.6% |
-| Test | 2026-03 | 21,089 | 12.8% | 19,506 | 31.2% |
+| Entrenamiento | 2025-09 a 2026-01 | 125.082 | 75,8 % | 112.303 | 39,0 % |
+| Validación | 2026-02 | 18.831 | 11,4 % | 17.297 | 31,6 % |
+| Test | 2026-03 | 21.089 | 12,8 % | 19.506 | 31,2 % |
 
-### Test metrics across the 5 seeds
+### Métricas de test en las 5 semillas
 
-| Metric | Mean | Std |
+| Métrica | Media | DE |
 |---|---|---|
-| PR-AUC (average precision) | 0.7496 | 0.0020 |
-| ROC-AUC | 0.8241 | 0.0020 |
-| Recall (lost, threshold 0.5) | 0.5339 | 0.0136 |
-| Precision (lost, threshold 0.5) | 0.7568 | 0.0157 |
-| F1 (lost, threshold 0.5) | 0.6259 | 0.0044 |
-| False positive rate (threshold 0.5) | 0.0781 | 0.0089 |
-| PR-AUC on validation | 0.7644 | 0.0019 |
+| PR-AUC (average precision) | 0,7496 | 0,0020 |
+| ROC-AUC | 0,8241 | 0,0020 |
+| Recall (perdido, umbral 0,5) | 0,5339 | 0,0136 |
+| Precisión (perdido, umbral 0,5) | 0,7568 | 0,0157 |
+| F1 (perdido, umbral 0,5) | 0,6259 | 0,0044 |
+| Tasa de falsos positivos (umbral 0,5) | 0,0781 | 0,0089 |
+| PR-AUC en validación | 0,7644 | 0,0019 |
 
-The PR-AUC baseline is the test positive rate, 0.312 (a model that ranks at
-random). Dispersion across seeds is small, so the result does not depend on
-the seed.
+La línea base de PR-AUC es la tasa de positivos del test, 0,312 (un modelo que
+ordena al azar). La dispersión entre semillas es pequeña, por lo que el
+resultado no depende de la semilla.
 
-### Ranking metrics (prioritization)
+### Métricas de ranking (priorización)
 
-`recall_en_K` is the share of all real losses found inside the top K% of test
-rows by score; `precision_en_K` is the share of that top K% that really was
-lost. Mean and std across the 5 seeds:
+`recall_en_K` es la fracción de todas las pérdidas reales que se encuentran en
+el K % superior de las filas de test ordenadas por puntuación; `precision_en_K`
+es la fracción de ese K % superior que realmente se perdió. Media y DE en las 5
+semillas:
 
-| Reviewed share (K) | Rows reviewed | Recall@K | Precision@K | Max possible Recall@K |
+| Fracción revisada (K) | Filas revisadas | Recall@K | Precision@K | Recall@K máximo posible |
 |---|---|---|---|---|
-| 1% | 211 | 0.0321 (std 0.0000) | 1.0000 (std 0.0000) | 0.032 |
-| 5% | 1,054 | 0.1581 (std 0.0006) | 0.9873 (std 0.0038) | 0.160 |
-| 10% | 2,109 | 0.3019 (std 0.0020) | 0.9421 (std 0.0061) | 0.320 |
-| 20% | 4,218 | 0.5060 (std 0.0024) | 0.7895 (std 0.0037) | 0.641 |
+| 1 % | 211 | 0,0321 (DE 0,0000) | 1,0000 (DE 0,0000) | 0,032 |
+| 5 % | 1.054 | 0,1581 (DE 0,0006) | 0,9873 (DE 0,0038) | 0,160 |
+| 10 % | 2.109 | 0,3019 (DE 0,0020) | 0,9421 (DE 0,0061) | 0,320 |
+| 20 % | 4.218 | 0,5060 (DE 0,0024) | 0,7895 (DE 0,0037) | 0,641 |
 
-Reviewing the top 20% captures about 51% of the losses, 2.5 times better than
-reviewing at random. Recall@K is capped by prevalence: with 31.2% positives,
-even a perfect ranking cannot capture more than K / 0.312 of the losses.
+Revisar el 20 % superior captura cerca del 51 % de las pérdidas, 2,5 veces
+mejor que revisar al azar. Recall@K está acotado por la prevalencia: con 31,2 %
+de positivos, ni siquiera un ranking perfecto puede capturar más de K / 0,312
+de las pérdidas.
 
-Reference model (seed 46), confusion matrix on test at threshold 0.5:
+Modelo de referencia (semilla 46), matriz de confusión en test con umbral 0,5:
 
-| | Predicted not lost | Predicted lost |
+| | Predicho no perdido | Predicho perdido |
 |---|---|---|
-| Actually not lost | 13,425 | 1,082 |
-| Actually lost | 3,094 | 3,488 |
+| Realmente no perdido | 13.425 | 1.082 |
+| Realmente perdido | 3.094 | 3.488 |
 
-### Projection to the real prevalence
+### Proyección a la prevalencia real
 
-Reference model (seed 46), projected with `REAL_PREVALENCE = 0.001` (the
-team's estimate of the real loss rate, not measured in this dataset). For any
-score threshold: reviewed share = pi x recall + (1 - pi) x FPR, and real
-precision = pi x recall / reviewed share.
+Modelo de referencia (semilla 46), proyectado con `REAL_PREVALENCE = 0.001`
+(la estimación del equipo sobre la tasa real de pérdida, no medida en este
+dataset). Para cualquier umbral de puntuación: fracción revisada = pi x recall
++ (1 - pi) x FPR, y precisión real = pi x recall / fracción revisada.
 
-| Minimum score | Recall | False positive rate | Shipments reviewed | Reviewed per real loss | Lift over random |
+| Puntuación mínima | Recall | Tasa de falsos positivos | Envíos revisados | Revisados por pérdida real | Mejora sobre el azar |
 |---|---|---|---|---|---|
-| 0.91 | 0.159 | 0.0008 | 0.09% | 6 | 173x |
-| 0.78 | 0.299 | 0.0097 | 1.00% | 33 | 30x |
-| 0.53 | 0.507 | 0.0606 | 6.10% | 120 | 8.3x |
-| 0.50 | 0.530 | 0.0746 | 7.50% | 142 | 7.1x |
+| 0,91 | 0,159 | 0,0008 | 0,09 % | 6 | 173x |
+| 0,78 | 0,299 | 0,0097 | 1,00 % | 33 | 30x |
+| 0,53 | 0,507 | 0,0606 | 6,10 % | 120 | 8,3x |
+| 0,50 | 0,530 | 0,0746 | 7,50 % | 142 | 7,1x |
 
-Headline for the report: reviewing the top 1% of real shipments would capture
-about 30% of the losses, one real loss per 33 shipments reviewed. The
-projection assumes the sampled negatives represent the real ones, which the
-extraction artifacts put in doubt, and the rows with a near-zero false
-positive rate are the most exposed to the suspected `DOM_DOMAIN_ID` artifact.
-It is a projection, not a measurement.
+Titular para el informe: revisar el 1 % superior de los envíos reales
+capturaría cerca del 30 % de las pérdidas, una pérdida real por cada 33 envíos
+revisados. La proyección supone que los negativos muestreados representan a
+los reales, algo que los artefactos de extracción ponen en duda, y las filas con
+una tasa de falsos positivos cercana a cero son las más expuestas al artefacto
+sospechado en `DOM_DOMAIN_ID`. Es una proyección, no una medición.
 
-### How to read these numbers
+### Cómo leer estos números
 
-- **The sample is case-control, on purpose.** Real loss is around 0.1%, so the
-  export keeps the losses and only a fraction of the healthy shipments
-  (~31-39% positive here). That design is valid. Under it, only recall and the
-  false positive rate carry over to production unchanged (each is computed
-  inside one class), so ROC-AUC is valid as is. Precision, PR-AUC, Precision@K,
-  Recall@K and lift over random all depend on prevalence: they describe
-  ranking quality **inside this sample** and none is a production figure (the
-  lift ceiling is 1/prevalence: ~3 here, ~1000 in production). See
-  "Projection to the real prevalence" below.
-- **The artifacts come from extracting the two classes differently**, not from
-  the class ratio: `LG_REGION` naming, the class-revealing nulls,
-  `DATEPARAMETER` and probably `DOM_DOMAIN_ID`.
-- **Precision@1% = 1.000 is suspicious, not a triumph.** Six `DOM_DOMAIN_ID`
-  values are 100% lost with 200-834 rows each (e.g.
-  `CELLPHONE_CASES_AND_COVERS`), which looks like the same class-keyed taxonomy
-  artifact found in `LG_REGION`. It is an open issue and likely inflates the
-  very top of the ranking.
-- **Not comparable with the earlier run.** A previous version used a random
-  group split and kept the immature month 2026-04; it scored ROC-AUC 0.848 /
-  PR-AUC 0.800. The drop to 0.824 / 0.750 is the cost of an honest temporal
-  test, not a regression.
-- **Item level.** Rows are shipment items, so all metrics are per item, not
-  per shipment.
-- **One test month.** The test set is a single month; it measures
-  generalization to the next month, not across seasons.
+- **La muestra es caso-control, a propósito.** La pérdida real ronda el 0,1 %,
+  así que la exportación conserva las pérdidas y solo una fracción de los
+  envíos sanos (~31-39 % positivos aquí). Ese diseño es válido. Bajo él, solo
+  el recall y la tasa de falsos positivos se trasladan a producción sin cambios
+  (cada uno se calcula dentro de una sola clase), por lo que ROC-AUC es válido
+  tal cual. Precisión, PR-AUC, Precision@K, Recall@K y la mejora sobre el azar
+  dependen de la prevalencia: describen la calidad del ranking **dentro de esta
+  muestra** y ninguna es una cifra de producción (el techo de la mejora es
+  1/prevalencia: ~3 aquí, ~1000 en producción). Ver
+  [Proyección a la prevalencia real](#proyección-a-la-prevalencia-real).
+- **Los artefactos provienen de extraer las dos clases de forma distinta**, no
+  de la proporción de clases: los nombres de `LG_REGION`, los nulos que revelan
+  la clase, `DATEPARAMETER` y probablemente `DOM_DOMAIN_ID`.
+- **Precision@1 % = 1,000 es sospechoso, no un triunfo.** Seis valores de
+  `DOM_DOMAIN_ID` son 100 % perdidos con 200-834 filas cada uno (p. ej.
+  `CELLPHONE_CASES_AND_COVERS`), lo que parece el mismo artefacto de taxonomía
+  ligada a la clase encontrado en `LG_REGION`. Es un asunto abierto y
+  probablemente infla la parte más alta del ranking.
+- **No comparable con la ejecución anterior.** Una versión previa usó una
+  partición aleatoria por grupos y conservó el mes inmaduro 2026-04; obtuvo
+  ROC-AUC 0,848 / PR-AUC 0,800. La caída a 0,824 / 0,750 es el costo de un test
+  temporal honesto, no una regresión.
+- **Nivel de artículo.** Las filas son artículos de envío, así que todas las
+  métricas son por artículo, no por envío.
+- **Un solo mes de test.** El test es un único mes; mide la generalización al
+  mes siguiente, no entre temporadas.
 
-## How the data should be re-extracted
-
-The class ratio is not the problem; extracting the two classes through
-different paths is. A future export should:
-
-1. Use **one query for both classes**: same population, filters, source tables
-   and creation-date window. Compute the label afterwards on that single set.
-2. **Downsample only the negatives, at random, at a recorded rate** `r` (keep
-   every loss in the window). Without `r` the predicted probabilities cannot be
-   corrected to the real scale (real odds = predicted odds x `r`).
-3. Include only shipments whose **label has matured**: created more than N days
-   ago, N being the time by which ~99% of losses are declared. Apply it to both
-   classes.
-4. Take attributes **as they were at shipment creation**, not their current
-   value.
-5. Sample **by shipment**, not by item.
-
-See `CLAUDE.md` for the full list of constraints a future change must not break.
-
-
-## Programación Genética (GP)
+## Programación genética (GP)
 
 El segundo enfoque de RiskShip evoluciona árboles simbólicos con DEAP para
 predecir `is_lost` por artículo con las mismas variables fuente y la misma
@@ -291,12 +322,6 @@ La RNA conserva su implementación y resultados originales. Las cifras GP son
 medidas en este experimento; no alcanzan las de RNA y se observó dependencia
 de la variable de dominio. No son métricas de producción.
 
-- [Instrucciones GP](README_GP.md)
-- [Notebook GP autocontenido, ejecutado localmente](notebooks/gp_shipment_loss.ipynb)
-- [Metodología, resultados y limitaciones](docs/GP_ENTRENAMIENTO_COMPLETO.md)
-- [Resultados por semilla](results/gp_full_v1/final_metrics.csv)
-- [Comparación gráfica](results/gp_full_v1/figures/rna_gp_comparison.png)
-
 ```bash
 uv sync --frozen
 uv run python -m unittest discover -s tests -v
@@ -307,3 +332,60 @@ El entrenamiento ampliado usa validation para seleccionar configuración,
 árbol y umbral; la selección queda registrada antes de evaluar test. El test
 es el mismo holdout previamente conocido del RNA. Los modelos GP con mapas
 de categorías se conservan localmente y se excluyen del control de versiones.
+
+| Recurso | Enlace |
+|---|---|
+| Instrucciones GP | [README_GP.md](README_GP.md) |
+| Notebook GP autocontenido, ejecutado localmente | [notebooks/gp_shipment_loss.ipynb](notebooks/gp_shipment_loss.ipynb) |
+| Metodología, resultados y limitaciones | [docs/GP_ENTRENAMIENTO_COMPLETO.md](docs/GP_ENTRENAMIENTO_COMPLETO.md) |
+| Resultados por semilla | [results/gp_full_v1/final_metrics.csv](results/gp_full_v1/final_metrics.csv) |
+| Comparación gráfica RNA vs. GP | [papers/figuras/rna_gp_comparison.png](papers/figuras/rna_gp_comparison.png) |
+| Artículo GP | [papers/riskship_gp.tex](papers/riskship_gp.tex) / [papers/riskship_gp.pdf](papers/riskship_gp.pdf) |
+
+Enlaces pendientes: la carpeta `results/gp_full_v1/figures/` que menciona
+`README_GP.md` no está en el repositorio; la figura de comparación se enlaza
+desde `papers/figuras/`.
+
+## Cómo reextraer los datos
+
+El problema no es la proporción de clases, sino extraer las dos clases por
+caminos distintos. Una exportación futura debe:
+
+1. Usar **una sola consulta para ambas clases**: misma población, filtros,
+   tablas de origen y ventana de fecha de creación. Calcular la etiqueta
+   después sobre ese único conjunto.
+2. **Submuestrear solo los negativos, al azar y a una tasa registrada** `r`
+   (conservar todas las pérdidas de la ventana). Sin `r`, las probabilidades
+   predichas no pueden corregirse a la escala real (odds reales = odds
+   predichos x `r`).
+3. Incluir solo envíos cuya **etiqueta haya madurado**: creados hace más de N
+   días, siendo N el tiempo en que ~99 % de las pérdidas ya se han declarado.
+   Aplicarlo a ambas clases.
+4. Tomar los atributos **tal como eran al crear el envío**, no su valor actual.
+5. Muestrear **por envío**, no por artículo.
+
+Ver `CLAUDE.md` para la lista completa de restricciones que un cambio futuro no
+debe romper.
+
+## Informes y artículos
+
+| Documento | Fuente | Compilar |
+|---|---|---|
+| Informe del proyecto (RNA), formato IEEE, en español | `informe/riskship_rna.tex` (figuras en `informe/figuras/`, exportadas por el notebook) | `cd informe && Rscript -e 'tinytex::pdflatex("riskship_rna.tex")'` |
+| Artículo del enfoque GP | `papers/riskship_gp.tex` / `papers/riskship_gp.pdf` (figuras en `papers/figuras/`) | `cd papers && Rscript -e 'tinytex::pdflatex("riskship_gp.tex")'` |
+
+Las figuras del informe las genera el notebook; no se editan a mano. Todo
+número citado en los informes proviene de la ejecución versionada del
+notebook, así que la regla del mismo commit de
+[Protocolo experimental y resultados (RNA)](#protocolo-experimental-y-resultados-rna)
+también los cubre.
+
+## Referencias internas
+
+| Archivo | Para qué |
+|---|---|
+| [CLAUDE.md](CLAUDE.md) | Restricciones de modelado, comandos y reglas que ningún cambio debe romper. |
+| [README_GP.md](README_GP.md) | Instrucciones de entrenamiento, uso del árbol entrenado e interpretación del enfoque GP. |
+| [docs/GP_ENTRENAMIENTO_COMPLETO.md](docs/GP_ENTRENAMIENTO_COMPLETO.md) | Metodología, resultados y limitaciones del experimento GP completo. |
+| [docs/GP_EXPERIMENTOS.md](docs/GP_EXPERIMENTOS.md) | Registro de la ejecución inicial de humo del enfoque GP. |
+| [dataset_dictionary.md](dataset_dictionary.md) | Diccionario de columnas y tipos del dataset generado. |
