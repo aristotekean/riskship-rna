@@ -268,3 +268,39 @@ different paths is. A future export should:
 5. Sample **by shipment**, not by item.
 
 See `CLAUDE.md` for the full list of constraints a future change must not break.
+
+
+## Programación Genética (GP)
+
+El segundo enfoque de RiskShip evoluciona árboles simbólicos con DEAP para
+predecir `is_lost` por artículo con las mismas variables fuente y la misma
+partición temporal de la RNA. El fitness usa las 125.082 filas de train.
+Se compararon tres configuraciones y se completaron cinco semillas para la
+configuración seleccionada por validación, más cinco corridas sin dominio.
+
+| Métrica test (media ± DE, cinco semillas) | GP | GP sin DOM_DOMAIN_ID | RNA reportada |
+|---|---:|---:|---:|
+| PR-AUC | 0,6393 ± 0,0338 | 0,5767 ± 0,0160 | 0,7496 ± 0,0020 |
+| ROC-AUC | 0,7734 ± 0,0186 | 0,7517 ± 0,0163 | 0,8241 ± 0,0020 |
+| Recall@20 % | 0,4450 ± 0,0199 | 0,3994 ± 0,0104 | 0,5060 ± 0,0024 |
+
+La RNA conserva su implementación y resultados originales. Las cifras GP son
+medidas en este experimento; no alcanzan las de RNA y se observó dependencia
+de la variable de dominio. No son métricas de producción.
+
+- [Instrucciones GP](README_GP.md)
+- [Notebook GP autocontenido, ejecutado localmente](notebooks/gp_shipment_loss.ipynb)
+- [Metodología, resultados y limitaciones](docs/GP_ENTRENAMIENTO_COMPLETO.md)
+- [Resultados por semilla](results/gp_full_v1/final_metrics.csv)
+- [Comparación gráfica](results/gp_full_v1/figures/rna_gp_comparison.png)
+
+```bash
+uv sync --frozen
+uv run python -m unittest discover -s tests -v
+uv run python gp_full_experiment.py --workers 2
+```
+
+El entrenamiento ampliado usa validation para seleccionar configuración,
+árbol y umbral; la selección queda registrada antes de evaluar test. El test
+es el mismo holdout previamente conocido del RNA. Los modelos GP con mapas
+de categorías se conservan localmente y se excluyen del control de versiones.

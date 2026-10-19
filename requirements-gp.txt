@@ -1,0 +1,11 @@
+# Versions verified locally with Python 3.12.3. RNA dependencies are unchanged.
+numpy==2.5.3
+pandas==2.3.3
+scikit-learn==1.9.1
+deap==1.4.4
+pyarrow==24.0.0
+matplotlib==3.11.2
+seaborn==0.13.2
+nbformat>=5.10,<6
+nbclient>=0.10,<1
+ipykernel>=7.3,<8

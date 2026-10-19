@@ -13,3 +13,7 @@ __pycache__/
 
 # AutoGluon
 AutogluonModels/
+
+# GP local artifacts
+results/**/private_models/
+results/notebook_smoke/
