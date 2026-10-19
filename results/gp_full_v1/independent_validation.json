@@ -1,0 +1,75 @@
+{
+  "checked_runs": [
+    {
+      "run": "temporal_180x25_regularized__domain__seed42",
+      "metrics_reproduced": true,
+      "labels_and_forbidden_columns_do_not_change_scores": true,
+      "fitness_rows": 125082,
+      "score_sha256": "0f1b3b6eea09348ff7ff0a5b1429a7b3629204b5123b8c558b8e3a45f9ed659c"
+    },
+    {
+      "run": "temporal_180x25_regularized__domain__seed43",
+      "metrics_reproduced": true,
+      "labels_and_forbidden_columns_do_not_change_scores": true,
+      "fitness_rows": 125082,
+      "score_sha256": "c798a77dbe37d8792bdcc32108cbc41642c7b874025dabc281a5dde51dd23492"
+    },
+    {
+      "run": "temporal_180x25_regularized__domain__seed44",
+      "metrics_reproduced": true,
+      "labels_and_forbidden_columns_do_not_change_scores": true,
+      "fitness_rows": 125082,
+      "score_sha256": "bad2881c730b7f2458b8521440f7c031e96364d5bf299823dd286f44ca5f8ff4"
+    },
+    {
+      "run": "temporal_180x25_regularized__domain__seed45",
+      "metrics_reproduced": true,
+      "labels_and_forbidden_columns_do_not_change_scores": true,
+      "fitness_rows": 125082,
+      "score_sha256": "57cfe27a339f0feac6c1be812e61f50b6f57938fd3c98d3f5e08c59f1eb88f1c"
+    },
+    {
+      "run": "temporal_180x25_regularized__domain__seed46",
+      "metrics_reproduced": true,
+      "labels_and_forbidden_columns_do_not_change_scores": true,
+      "fitness_rows": 125082,
+      "score_sha256": "d27435a59cb022161bdab0fe28dca958b58fa15b7f2bb3e1e4db27743017e66e"
+    },
+    {
+      "run": "temporal_180x25_regularized__no_domain__seed42",
+      "metrics_reproduced": true,
+      "labels_and_forbidden_columns_do_not_change_scores": true,
+      "fitness_rows": 125082,
+      "score_sha256": "569d97e3d068bf75813927dc7c2c2dfec3ef9115ecd5bc30a3789307cbd0a7b8"
+    },
+    {
+      "run": "temporal_180x25_regularized__no_domain__seed43",
+      "metrics_reproduced": true,
+      "labels_and_forbidden_columns_do_not_change_scores": true,
+      "fitness_rows": 125082,
+      "score_sha256": "a04a78233c6b0b64134afed91de224724523bec70957187a737bbc59f8eeca15"
+    },
+    {
+      "run": "temporal_180x25_regularized__no_domain__seed44",
+      "metrics_reproduced": true,
+      "labels_and_forbidden_columns_do_not_change_scores": true,
+      "fitness_rows": 125082,
+      "score_sha256": "58b377877c7bd0aecc654ec900f6405f94eb8ce47ac80e34930cbd9719d1aaae"
+    },
+    {
+      "run": "temporal_180x25_regularized__no_domain__seed45",
+      "metrics_reproduced": true,
+      "labels_and_forbidden_columns_do_not_change_scores": true,
+      "fitness_rows": 125082,
+      "score_sha256": "b122c56ab90a2bcf27c6a58e9ff7ec89c51f323ceb9e79b8d77c5cf13ef48790"
+    },
+    {
+      "run": "temporal_180x25_regularized__no_domain__seed46",
+      "metrics_reproduced": true,
+      "labels_and_forbidden_columns_do_not_change_scores": true,
+      "fitness_rows": 125082,
+      "score_sha256": "0316ccf255d1cea79d3c0ee5ab246fdf3717d39c5e7e8c97475a43bf8c48b8f1"
+    }
+  ],
+  "errors": 0
+}

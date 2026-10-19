@@ -1,0 +1,66 @@
+{
+  "configurations": [
+    {
+      "name": "frequency_100x15",
+      "encoding": "frequency",
+      "population": 100,
+      "generations": 15,
+      "penalty": 0.0001,
+      "smoothing": 50.0,
+      "max_height": 8,
+      "max_nodes": 127
+    },
+    {
+      "name": "temporal_130x18",
+      "encoding": "temporal",
+      "population": 130,
+      "generations": 18,
+      "penalty": 0.0001,
+      "smoothing": 50.0,
+      "max_height": 8,
+      "max_nodes": 127
+    },
+    {
+      "name": "temporal_180x25_regularized",
+      "encoding": "temporal",
+      "population": 180,
+      "generations": 25,
+      "penalty": 0.0003,
+      "smoothing": 50.0,
+      "max_height": 8,
+      "max_nodes": 127
+    }
+  ],
+  "screen_seeds": [
+    42,
+    43
+  ],
+  "final_seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "fitness": "all 125082 TRAIN rows, AP - lambda * nodes",
+  "selection": "highest mean validation AP over screen seeds; then five repetitions",
+  "tree_selection": "highest validation AP among per-generation train champions + final train HallOfFame(5)",
+  "test_policy": "all choices and thresholds sealed before any new test scoring",
+  "dataset_sha256": "311097ed90243a59161de71f6ad19f7185685d003c1d48bfee0ec1a00df1f19a",
+  "score_is_probability": false,
+  "previous_test_exposure": "Original small GP and RNA test results were already visible; this is a fixed comparative holdout, not a fresh blind test.",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "logical_cpus": 12,
+    "workers": 2,
+    "packages": {
+      "numpy": "2.5.3",
+      "pandas": "2.3.3",
+      "scikit-learn": "1.9.1",
+      "deap": "1.4.4",
+      "pyarrow": "24.0.0",
+      "matplotlib": "3.11.2"
+    }
+  }
+}

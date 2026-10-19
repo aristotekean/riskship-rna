@@ -1,0 +1,127 @@
+{
+  "tree": "add(add(x13, tanh(sub(tanh(x6), x9))), add(min(sub(x6, abs(x8)), add(x13, x8)), add(sub(x8, x9), tanh(sub(max(x6, x15), x9)))))",
+  "nodes": 27,
+  "height": 6,
+  "training_ap": 0.6863789742365141,
+  "validation_ap": 0.5815641235219657,
+  "candidate_count": 18,
+  "unique_fitness_evaluations": 3287,
+  "fit_seconds": 2410.0915392000006,
+  "run": "temporal_180x25_regularized__no_domain__seed43",
+  "config": {
+    "name": "temporal_180x25_regularized",
+    "encoding": "temporal",
+    "population": 180,
+    "generations": 25,
+    "penalty": 0.0003,
+    "smoothing": 50.0,
+    "max_height": 8,
+    "max_nodes": 127
+  },
+  "seed": 43,
+  "include_domain": false,
+  "fitness_rows": 125082,
+  "terminal_names": {
+    "0": "freq__PICKING_TYPE",
+    "1": "freq__SHP_LG_FACILITY_ID",
+    "2": "freq__ORD_CATEGORY_NAME_L1",
+    "3": "freq__BRAND_NAME",
+    "4": "freq__TIPO_BULKY",
+    "5": "past_target__PICKING_TYPE",
+    "6": "past_target__SHP_LG_FACILITY_ID",
+    "7": "past_target__ORD_CATEGORY_NAME_L1",
+    "8": "past_target__BRAND_NAME",
+    "9": "past_target__TIPO_BULKY",
+    "10": "PESO_TOTAL_KG",
+    "11": "DIM_MAX_CM",
+    "12": "VALOR_TOTAL_USD",
+    "13": "CANTIDAD_ITEMS",
+    "14": "RATIO_SVC_MES_ANTERIOR",
+    "15": "ES_BULKY",
+    "16": "day_of_week"
+  },
+  "split": {
+    "train": {
+      "months": [
+        "2025-09",
+        "2025-10",
+        "2025-11",
+        "2025-12",
+        "2026-01"
+      ],
+      "rows": 125082,
+      "shipments": 112303,
+      "positive_rate": 0.3896483906557298
+    },
+    "validation": {
+      "months": [
+        "2026-02"
+      ],
+      "rows": 18831,
+      "shipments": 17297,
+      "positive_rate": 0.3163931814561096
+    },
+    "test": {
+      "months": [
+        "2026-03"
+      ],
+      "rows": 21089,
+      "shipments": 19506,
+      "positive_rate": 0.31210583716629525
+    },
+    "shared_shipment_groups": 0
+  },
+  "threshold": 0.25707742574742415,
+  "validation": {
+    "pr_auc": 0.5815641235219657,
+    "roc_auc": 0.757792545957334,
+    "recall": 0.7192010741859685,
+    "precision": 0.49491799491799493,
+    "f1": 0.586343732895457,
+    "confusion_matrix": [
+      [
+        8500,
+        4373
+      ],
+      [
+        1673,
+        4285
+      ]
+    ],
+    "recall_at_1%": 0.022994293387042633,
+    "precision_at_1%": 0.7287234042553191,
+    "recall_at_5%": 0.11597851628063108,
+    "precision_at_5%": 0.7335456475583864,
+    "recall_at_10%": 0.22037596508895602,
+    "precision_at_10%": 0.6972915560276155,
+    "recall_at_20%": 0.4068479355488419,
+    "precision_at_20%": 0.6436537440254912
+  },
+  "total_seconds": 2421.7224662999997,
+  "model_path": "private_models\\temporal_180x25_regularized__no_domain__seed43.pickle",
+  "test": {
+    "pr_auc": 0.5838980044352078,
+    "roc_auc": 0.7571666593670964,
+    "recall": 0.7207535703433606,
+    "precision": 0.48226085188573753,
+    "f1": 0.5778671051830196,
+    "confusion_matrix": [
+      [
+        9414,
+        5093
+      ],
+      [
+        1838,
+        4744
+      ]
+    ],
+    "recall_at_1%": 0.024612579762989972,
+    "precision_at_1%": 0.7677725118483413,
+    "recall_at_5%": 0.12154360376785171,
+    "precision_at_5%": 0.7590132827324478,
+    "recall_at_10%": 0.22759039805530235,
+    "precision_at_10%": 0.7102892366050261,
+    "recall_at_20%": 0.4056517775752051,
+    "precision_at_20%": 0.6330014224751067
+  }
+}

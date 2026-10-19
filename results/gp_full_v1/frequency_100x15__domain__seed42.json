@@ -1,0 +1,98 @@
+{
+  "tree": "sub(x9, tanh(sub(x5, x1)))",
+  "nodes": 6,
+  "height": 3,
+  "training_ap": 0.6129365640741814,
+  "validation_ap": 0.5232746134199842,
+  "candidate_count": 6,
+  "unique_fitness_evaluations": 658,
+  "fit_seconds": 22.091909200000373,
+  "run": "frequency_100x15__domain__seed42",
+  "config": {
+    "name": "frequency_100x15",
+    "encoding": "frequency",
+    "population": 100,
+    "generations": 15,
+    "penalty": 0.0001,
+    "smoothing": 50.0,
+    "max_height": 8,
+    "max_nodes": 127
+  },
+  "seed": 42,
+  "include_domain": true,
+  "fitness_rows": 125082,
+  "terminal_names": {
+    "0": "freq__PICKING_TYPE",
+    "1": "freq__SHP_LG_FACILITY_ID",
+    "2": "freq__DOM_DOMAIN_ID",
+    "3": "freq__ORD_CATEGORY_NAME_L1",
+    "4": "freq__BRAND_NAME",
+    "5": "freq__TIPO_BULKY",
+    "6": "PESO_TOTAL_KG",
+    "7": "DIM_MAX_CM",
+    "8": "VALOR_TOTAL_USD",
+    "9": "CANTIDAD_ITEMS",
+    "10": "RATIO_SVC_MES_ANTERIOR",
+    "11": "ES_BULKY",
+    "12": "day_of_week"
+  },
+  "split": {
+    "train": {
+      "months": [
+        "2025-09",
+        "2025-10",
+        "2025-11",
+        "2025-12",
+        "2026-01"
+      ],
+      "rows": 125082,
+      "shipments": 112303,
+      "positive_rate": 0.3896483906557298
+    },
+    "validation": {
+      "months": [
+        "2026-02"
+      ],
+      "rows": 18831,
+      "shipments": 17297,
+      "positive_rate": 0.3163931814561096
+    },
+    "test": {
+      "months": [
+        "2026-03"
+      ],
+      "rows": 21089,
+      "shipments": 19506,
+      "positive_rate": 0.31210583716629525
+    },
+    "shared_shipment_groups": 0
+  },
+  "threshold": 0.3564183500715838,
+  "validation": {
+    "pr_auc": 0.5232746134199842,
+    "roc_auc": 0.7021929927838167,
+    "recall": 0.6910036925142665,
+    "precision": 0.4512769922174723,
+    "f1": 0.545985014256349,
+    "confusion_matrix": [
+      [
+        7867,
+        5006
+      ],
+      [
+        1841,
+        4117
+      ]
+    ],
+    "recall_at_1%": 0.022994293387042633,
+    "precision_at_1%": 0.7287234042553191,
+    "recall_at_5%": 0.10808996307485734,
+    "precision_at_5%": 0.6836518046709129,
+    "recall_at_10%": 0.20275260154414232,
+    "precision_at_10%": 0.6415294742432289,
+    "recall_at_20%": 0.36069150721718696,
+    "precision_at_20%": 0.570631970260223
+  },
+  "total_seconds": 30.472849199999473,
+  "model_path": "private_models\\frequency_100x15__domain__seed42.pickle"
+}

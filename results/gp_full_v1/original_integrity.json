@@ -1,0 +1,28 @@
+{
+  "zip_name": "riskship-rna-main (2).zip",
+  "original_files_checked": 58,
+  "changed_original_files": [
+    "pyproject.toml",
+    "uv.lock"
+  ],
+  "unexpected_changes": [],
+  "rna_and_data_unchanged": true,
+  "sha256": {
+    "dataset.parquet": {
+      "original": "311097ed90243a59161de71f6ad19f7185685d003c1d48bfee0ec1a00df1f19a",
+      "current": "311097ed90243a59161de71f6ad19f7185685d003c1d48bfee0ec1a00df1f19a"
+    },
+    "exports\\riskship_rna_model.json": {
+      "original": "fa005beb8c6830aa23c4818d0b0cd0e8695e5aaac49db80da96cc91175a69ac2",
+      "current": "fa005beb8c6830aa23c4818d0b0cd0e8695e5aaac49db80da96cc91175a69ac2"
+    },
+    "exports\\riskship_rna_model.pickle": {
+      "original": "635b91100c483de5a6d097606b04ea79874554e9197be00f4726b2640d1fd03c",
+      "current": "635b91100c483de5a6d097606b04ea79874554e9197be00f4726b2640d1fd03c"
+    },
+    "notebooks\\rna_shipment_loss.ipynb": {
+      "original": "08de6ed584670870b2a324e59e4480f9fa05ae6a0f5a07c7e611e9571e588b51",
+      "current": "08de6ed584670870b2a324e59e4480f9fa05ae6a0f5a07c7e611e9571e588b51"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "train": {
+    "large_100pct_loss_categories": 3,
+    "rows_in_these_categories": 1507,
+    "row_share": 0.012048096448729633
+  },
+  "validation": {
+    "large_100pct_loss_categories": 0,
+    "rows_in_these_categories": 0,
+    "row_share": 0.0
+  },
+  "test": {
+    "large_100pct_loss_categories": 0,
+    "rows_in_these_categories": 0,
+    "row_share": 0.0
+  }
+}

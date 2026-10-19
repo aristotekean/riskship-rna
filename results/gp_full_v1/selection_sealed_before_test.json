@@ -1,0 +1,39 @@
+{
+  "configuration": {
+    "name": "temporal_180x25_regularized",
+    "encoding": "temporal",
+    "population": 180,
+    "generations": 25,
+    "penalty": 0.0003,
+    "smoothing": 50.0,
+    "max_height": 8,
+    "max_nodes": 127
+  },
+  "reference_run": "temporal_180x25_regularized__domain__seed44",
+  "reference_no_domain": "temporal_180x25_regularized__no_domain__seed45",
+  "evaluation_runs": [
+    "temporal_180x25_regularized__domain__seed42",
+    "temporal_180x25_regularized__domain__seed43",
+    "temporal_180x25_regularized__domain__seed44",
+    "temporal_180x25_regularized__domain__seed45",
+    "temporal_180x25_regularized__domain__seed46",
+    "temporal_180x25_regularized__no_domain__seed42",
+    "temporal_180x25_regularized__no_domain__seed43",
+    "temporal_180x25_regularized__no_domain__seed44",
+    "temporal_180x25_regularized__no_domain__seed45",
+    "temporal_180x25_regularized__no_domain__seed46"
+  ],
+  "thresholds": {
+    "temporal_180x25_regularized__domain__seed42": 0.8247791692481642,
+    "temporal_180x25_regularized__domain__seed43": 0.7945144388576164,
+    "temporal_180x25_regularized__domain__seed44": 1.1337300400126522,
+    "temporal_180x25_regularized__domain__seed45": 1.1052007028489808,
+    "temporal_180x25_regularized__domain__seed46": 0.5552370229276595,
+    "temporal_180x25_regularized__no_domain__seed42": 0.295161123399928,
+    "temporal_180x25_regularized__no_domain__seed43": 0.25707742574742415,
+    "temporal_180x25_regularized__no_domain__seed44": 0.1360634134063928,
+    "temporal_180x25_regularized__no_domain__seed45": 0.6445141225184745,
+    "temporal_180x25_regularized__no_domain__seed46": 0.8678305772846686
+  },
+  "test_used_for_selection": false
+}

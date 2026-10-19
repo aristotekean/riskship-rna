@@ -1,0 +1,37 @@
+[
+  {
+    "run": "temporal_180x25_regularized__domain__seed44",
+    "generation": 14,
+    "wall_gap_seconds": 890.2077233999998
+  },
+  {
+    "run": "temporal_180x25_regularized__domain__seed44",
+    "generation": 15,
+    "wall_gap_seconds": 3027.9576431000005
+  },
+  {
+    "run": "temporal_180x25_regularized__domain__seed45",
+    "generation": 15,
+    "wall_gap_seconds": 3903.5919659
+  },
+  {
+    "run": "temporal_180x25_regularized__no_domain__seed42",
+    "generation": 1,
+    "wall_gap_seconds": 2259.8118306000015
+  },
+  {
+    "run": "temporal_180x25_regularized__no_domain__seed43",
+    "generation": 1,
+    "wall_gap_seconds": 1358.5548316
+  },
+  {
+    "run": "temporal_180x25_regularized__no_domain__seed45",
+    "generation": 15,
+    "wall_gap_seconds": 135.93155280000062
+  },
+  {
+    "run": "temporal_180x25_regularized__no_domain__seed46",
+    "generation": 6,
+    "wall_gap_seconds": 134.96515290000025
+  }
+]

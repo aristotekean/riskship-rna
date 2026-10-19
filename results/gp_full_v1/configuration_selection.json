@@ -1,0 +1,17 @@
+{
+  "validation_means": {
+    "frequency_100x15": 0.547469502374896,
+    "temporal_130x18": 0.551917682934276,
+    "temporal_180x25_regularized": 0.6061398677624282
+  },
+  "selected": {
+    "name": "temporal_180x25_regularized",
+    "encoding": "temporal",
+    "population": 180,
+    "generations": 25,
+    "penalty": 0.0003,
+    "smoothing": 50.0,
+    "max_height": 8,
+    "max_nodes": 127
+  }
+}

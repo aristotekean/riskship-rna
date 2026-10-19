@@ -1,0 +1,127 @@
+{
+  "tree": "add(max(x6, x1), add(add(min(mul(x11, x10), sub(x4, x5)), tanh(min(add(x13, x6), sub(x6, x5)))), add(add(x13, x6), max(log(max(add(x14, max(x6, x13)), tanh(x13))), x1))))",
+  "nodes": 36,
+  "height": 8,
+  "training_ap": 0.6568918883089665,
+  "validation_ap": 0.5685876434856165,
+  "candidate_count": 20,
+  "unique_fitness_evaluations": 2763,
+  "fit_seconds": 248.1208577999987,
+  "run": "temporal_180x25_regularized__no_domain__seed46",
+  "config": {
+    "name": "temporal_180x25_regularized",
+    "encoding": "temporal",
+    "population": 180,
+    "generations": 25,
+    "penalty": 0.0003,
+    "smoothing": 50.0,
+    "max_height": 8,
+    "max_nodes": 127
+  },
+  "seed": 46,
+  "include_domain": false,
+  "fitness_rows": 125082,
+  "terminal_names": {
+    "0": "freq__PICKING_TYPE",
+    "1": "freq__SHP_LG_FACILITY_ID",
+    "2": "freq__ORD_CATEGORY_NAME_L1",
+    "3": "freq__BRAND_NAME",
+    "4": "freq__TIPO_BULKY",
+    "5": "past_target__PICKING_TYPE",
+    "6": "past_target__SHP_LG_FACILITY_ID",
+    "7": "past_target__ORD_CATEGORY_NAME_L1",
+    "8": "past_target__BRAND_NAME",
+    "9": "past_target__TIPO_BULKY",
+    "10": "PESO_TOTAL_KG",
+    "11": "DIM_MAX_CM",
+    "12": "VALOR_TOTAL_USD",
+    "13": "CANTIDAD_ITEMS",
+    "14": "RATIO_SVC_MES_ANTERIOR",
+    "15": "ES_BULKY",
+    "16": "day_of_week"
+  },
+  "split": {
+    "train": {
+      "months": [
+        "2025-09",
+        "2025-10",
+        "2025-11",
+        "2025-12",
+        "2026-01"
+      ],
+      "rows": 125082,
+      "shipments": 112303,
+      "positive_rate": 0.3896483906557298
+    },
+    "validation": {
+      "months": [
+        "2026-02"
+      ],
+      "rows": 18831,
+      "shipments": 17297,
+      "positive_rate": 0.3163931814561096
+    },
+    "test": {
+      "months": [
+        "2026-03"
+      ],
+      "rows": 21089,
+      "shipments": 19506,
+      "positive_rate": 0.31210583716629525
+    },
+    "shared_shipment_groups": 0
+  },
+  "threshold": 0.8678305772846686,
+  "validation": {
+    "pr_auc": 0.5685876434856165,
+    "roc_auc": 0.7401556812913472,
+    "recall": 0.6977173548170527,
+    "precision": 0.4839911514728141,
+    "f1": 0.5715267752801265,
+    "confusion_matrix": [
+      [
+        8441,
+        4432
+      ],
+      [
+        1801,
+        4157
+      ]
+    ],
+    "recall_at_1%": 0.023162134944612285,
+    "precision_at_1%": 0.7340425531914894,
+    "recall_at_5%": 0.11681772406847936,
+    "precision_at_5%": 0.7388535031847133,
+    "recall_at_10%": 0.21785834172541121,
+    "precision_at_10%": 0.6893255443441317,
+    "recall_at_20%": 0.3855320577374958,
+    "precision_at_20%": 0.6099309612320765
+  },
+  "total_seconds": 254.3042185000013,
+  "model_path": "private_models\\temporal_180x25_regularized__no_domain__seed46.pickle",
+  "test": {
+    "pr_auc": 0.553091103594784,
+    "roc_auc": 0.7259798950357415,
+    "recall": 0.7525068368277119,
+    "precision": 0.42577151207770997,
+    "f1": 0.543837496568762,
+    "confusion_matrix": [
+      [
+        7827,
+        6680
+      ],
+      [
+        1629,
+        4953
+      ]
+    ],
+    "recall_at_1%": 0.024612579762989972,
+    "precision_at_1%": 0.7677725118483413,
+    "recall_at_5%": 0.11865694317836524,
+    "precision_at_5%": 0.7409867172675522,
+    "recall_at_10%": 0.2158918261926466,
+    "precision_at_10%": 0.6737790422000949,
+    "recall_at_20%": 0.3839258584017016,
+    "precision_at_20%": 0.5990990990990991
+  }
+}

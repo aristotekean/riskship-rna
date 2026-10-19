@@ -1,0 +1,40 @@
+model,metric,mean,std,source
+GP con dominio,pr_auc,0.6393090518914073,0.033782538765412026,measured_current_run
+GP sin dominio,pr_auc,0.5766741406565449,0.016016019778676463,measured_current_run
+RNA,pr_auc,0.7496,0.002,repository_report_not_retrained
+GP con dominio,roc_auc,0.7734177532291591,0.018586857640859798,measured_current_run
+GP sin dominio,roc_auc,0.751653746427426,0.016336351140126607,measured_current_run
+RNA,roc_auc,0.8241,0.002,repository_report_not_retrained
+GP con dominio,recall,0.6731692494682467,0.040830810596178484,measured_current_run
+GP sin dominio,recall,0.7218474627772713,0.042558353360767444,measured_current_run
+RNA,recall,0.5339,0.0136,repository_report_not_retrained
+GP con dominio,precision,0.550620167176235,0.03686379585418888,measured_current_run
+GP sin dominio,precision,0.4762702892601779,0.036380412499266004,measured_current_run
+RNA,precision,0.7568,0.0157,repository_report_not_retrained
+GP con dominio,f1,0.6039366964022995,0.012938705647961096,measured_current_run
+GP sin dominio,f1,0.5720358778094058,0.017243265273805118,measured_current_run
+RNA,f1,0.6259,0.0044,repository_report_not_retrained
+GP con dominio,recall_at_1%,0.027013065937405045,0.003401321256507012,measured_current_run
+GP sin dominio,recall_at_1%,0.02458219386204801,6.794494006380379e-05,measured_current_run
+RNA,recall_at_1%,0.0321,0.0,repository_report_not_retrained
+GP con dominio,recall_at_5%,0.13430568216347616,0.01274262020254996,measured_current_run
+GP sin dominio,recall_at_5%,0.11999392281981161,0.0019438666182390698,measured_current_run
+RNA,recall_at_5%,0.1581,0.0006,repository_report_not_retrained
+GP con dominio,recall_at_10%,0.2594955940443634,0.017216033126152677,measured_current_run
+GP sin dominio,recall_at_10%,0.22567608629595867,0.006338028418262539,measured_current_run
+RNA,recall_at_10%,0.3019,0.002,repository_report_not_retrained
+GP con dominio,recall_at_20%,0.44497113339410516,0.019915344615808527,measured_current_run
+GP sin dominio,recall_at_20%,0.3993922819811607,0.010367672073076846,measured_current_run
+RNA,recall_at_20%,0.506,0.0024,repository_report_not_retrained
+GP con dominio,precision_at_1%,0.842654028436019,0.10610187919587277,measured_current_run
+GP sin dominio,precision_at_1%,0.7668246445497632,0.0021194957132699647,measured_current_run
+RNA,precision_at_1%,1.0,0.0,repository_report_not_retrained
+GP con dominio,precision_at_5%,0.8387096774193548,0.07957488251725221,measured_current_run
+GP sin dominio,precision_at_5%,0.7493358633776092,0.012139022847485343,measured_current_run
+RNA,precision_at_5%,0.9873,0.0038,repository_report_not_retrained
+GP con dominio,precision_at_10%,0.8098624940730204,0.05372969655587334,measured_current_run
+GP sin dominio,precision_at_10%,0.7043148411569463,0.01978041870507536,measured_current_run
+RNA,precision_at_10%,0.9421,0.0061,repository_report_not_retrained
+GP con dominio,precision_at_20%,0.694357515410147,0.031077002906887554,measured_current_run
+GP sin dominio,precision_at_20%,0.6232337600758653,0.01617828771574015,measured_current_run
+RNA,precision_at_20%,0.7895,0.0037,repository_report_not_retrained

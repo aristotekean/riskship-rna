@@ -1,0 +1,104 @@
+{
+  "tree": "add(x7, sub(x15, tanh(x11)))",
+  "nodes": 6,
+  "height": 3,
+  "training_ap": 0.6517156768688686,
+  "validation_ap": 0.5443752805529067,
+  "candidate_count": 10,
+  "unique_fitness_evaluations": 1024,
+  "fit_seconds": 28.060023299999557,
+  "run": "temporal_130x18__domain__seed42",
+  "config": {
+    "name": "temporal_130x18",
+    "encoding": "temporal",
+    "population": 130,
+    "generations": 18,
+    "penalty": 0.0001,
+    "smoothing": 50.0,
+    "max_height": 8,
+    "max_nodes": 127
+  },
+  "seed": 42,
+  "include_domain": true,
+  "fitness_rows": 125082,
+  "terminal_names": {
+    "0": "freq__PICKING_TYPE",
+    "1": "freq__SHP_LG_FACILITY_ID",
+    "2": "freq__DOM_DOMAIN_ID",
+    "3": "freq__ORD_CATEGORY_NAME_L1",
+    "4": "freq__BRAND_NAME",
+    "5": "freq__TIPO_BULKY",
+    "6": "past_target__PICKING_TYPE",
+    "7": "past_target__SHP_LG_FACILITY_ID",
+    "8": "past_target__DOM_DOMAIN_ID",
+    "9": "past_target__ORD_CATEGORY_NAME_L1",
+    "10": "past_target__BRAND_NAME",
+    "11": "past_target__TIPO_BULKY",
+    "12": "PESO_TOTAL_KG",
+    "13": "DIM_MAX_CM",
+    "14": "VALOR_TOTAL_USD",
+    "15": "CANTIDAD_ITEMS",
+    "16": "RATIO_SVC_MES_ANTERIOR",
+    "17": "ES_BULKY",
+    "18": "day_of_week"
+  },
+  "split": {
+    "train": {
+      "months": [
+        "2025-09",
+        "2025-10",
+        "2025-11",
+        "2025-12",
+        "2026-01"
+      ],
+      "rows": 125082,
+      "shipments": 112303,
+      "positive_rate": 0.3896483906557298
+    },
+    "validation": {
+      "months": [
+        "2026-02"
+      ],
+      "rows": 18831,
+      "shipments": 17297,
+      "positive_rate": 0.3163931814561096
+    },
+    "test": {
+      "months": [
+        "2026-03"
+      ],
+      "rows": 21089,
+      "shipments": 19506,
+      "positive_rate": 0.31210583716629525
+    },
+    "shared_shipment_groups": 0
+  },
+  "threshold": 0.15217627268819256,
+  "validation": {
+    "pr_auc": 0.5443752805529067,
+    "roc_auc": 0.7262747359640949,
+    "recall": 0.6928499496475328,
+    "precision": 0.47279807582178446,
+    "f1": 0.5620532371162094,
+    "confusion_matrix": [
+      [
+        8270,
+        4603
+      ],
+      [
+        1830,
+        4128
+      ]
+    ],
+    "recall_at_1%": 0.023162134944612285,
+    "precision_at_1%": 0.7340425531914894,
+    "recall_at_5%": 0.10725075528700906,
+    "precision_at_5%": 0.678343949044586,
+    "recall_at_10%": 0.20745216515609266,
+    "precision_at_10%": 0.6563993627190653,
+    "recall_at_20%": 0.37881839543470963,
+    "precision_at_20%": 0.5993096123207647
+  },
+  "total_seconds": 34.241797300000144,
+  "model_path": "private_models\\temporal_130x18__domain__seed42.pickle"
+}
