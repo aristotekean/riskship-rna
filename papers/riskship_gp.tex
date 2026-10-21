@@ -11,6 +11,7 @@
 % La figura figuras/rna_gp_comparison.png es la que el notebook ejecutado
 % notebooks/gp_shipment_loss.ipynb muestra desde
 % results/gp_full_v1/figures/rna_gp_comparison.png; no se edita a mano.
+% Las figuras adicionales se regeneran con python papers/build_paper_figures.py.
 \documentclass[conference]{IEEEtran}
 
 \usepackage[utf8]{inputenc}
@@ -56,8 +57,9 @@ configuración, el árbol y el umbral se eligen solo en validación y la selecci
 se sella antes de puntuar la prueba. Con cinco semillas, el GP alcanza en el mes
 de prueba un PR-AUC de 0,639~$\pm$~0,034 y un ROC-AUC de 0,773~$\pm$~0,019,
 frente a 0,750~$\pm$~0,002 y 0,824~$\pm$~0,002 de la RNA sobre el mismo
-\textit{holdout}: no la alcanza, pero produce expresiones de 9 a 36 nodos
-legibles. Una ablación sin el dominio del producto reduce el PR-AUC a
+\textit{holdout}: no la alcanza en estas métricas, pero produce expresiones
+explícitas de 9 a 36 nodos con dominio y de 7 a 36 sin él. Una ablación sin
+el dominio del producto reduce el PR-AUC a
 0,577~$\pm$~0,016, lo que confirma la dependencia de una variable con un
 artefacto de extracción sospechado.
 \end{abstract}
@@ -71,7 +73,7 @@ partición temporal, interpretabilidad, DEAP
 
 Las plataformas de comercio electrónico operan redes logísticas en las que un
 envío atraviesa centros de \textit{fulfillment}, \textit{cross-docking},
-transporte intermedio y última milla~\cite{meli10k}. La capacidad humana de
+transporte intermedio y última milla. La capacidad humana de
 monitoreo es limitada, de modo que el valor de un modelo no está solo en
 clasificar bien, sino en concentrar la atención en la fracción de casos con
 mayor riesgo. En la literatura, el riesgo en cadenas de suministro se ha
@@ -148,11 +150,11 @@ variables no informativas y a la capacidad de representar funciones
 irregulares, y Shwartz-Ziv y Armon~\cite{shwartz} comprueban que las
 arquitecturas profundas propuestas para datos tabulares rara vez superan a
 XGBoost fuera de los conjuntos en que fueron presentadas. Estos resultados no
-se trasladan directamente al GP, cuyas primitivas aritméticas continuas se
-parecen más a una red pequeña que a un árbol de decisión; la brecha de 0,110
-en PR-AUC frente a la RNA sugiere que la limitación del GP de RiskShip no
-proviene del tipo de datos, sino del presupuesto de búsqueda y de la ausencia
-de primitivas condicionales, que es la hipótesis que motiva el trabajo futuro.
+se trasladan directamente al GP: un árbol de expresión aritmética y un árbol
+de decisión pertenecen a familias distintas. La brecha observada de 0,110 en
+PR-AUC frente a la RNA no permite aislar su causa. El presupuesto de búsqueda
+y la ausencia de primitivas condicionales son hipótesis para experimentos
+futuros, no explicaciones demostradas por esta comparación.
 
 \subsection{Aprendizaje automático en riesgo logístico y pérdida de envíos}
 
@@ -193,8 +195,11 @@ clase es precisamente una fuga de las que esos autores describen.
 
 \subsection{Problema de aplicación}
 
-Mercado Envíos gestiona un volumen de paquetes en el que la pérdida real ronda
-el 0,1\,\% de los envíos. Aunque la proporción es pequeña, cada pérdida
+La aplicación considera una operación logística de comercio electrónico. El
+equipo adoptó una prevalencia operacional de referencia del 0,1\,\% en la
+entrega anterior~\cite{informe_rna}; es una estimación de contexto, no una
+estadística medida en este conjunto ni un parámetro usado para entrenar o
+proyectar los resultados de este estudio. Cada pérdida
 implica reembolso, reposición y deterioro de la confianza del comprador. El
 equipo que puede intervenir (verificar el empaque, reforzar el seguimiento,
 cambiar la ruta) tiene una capacidad fija, muy inferior al volumen diario. La
@@ -235,7 +240,8 @@ conocidas en la creación: seis categóricas (\col{PICKING_TYPE},
 de \col{date_status_0}. Ninguna fecha absoluta es admisible: permitiría
 reaprender el sesgo de madurez de la etiqueta descrito abajo.
 
-\textbf{Salida.} Un puntaje continuo de riesgo, no acotado ni calibrado, que
+\textbf{Salida.} Un puntaje continuo de riesgo, no restringido al intervalo
+$[0,1]$ ni calibrado como probabilidad, que
 ordena los artículos; y una decisión binaria obtenida al comparar ese puntaje
 con un umbral elegido en validación.
 
@@ -293,14 +299,17 @@ directamente.
 Las restricciones se mantienen iguales a las de la RNA. (a)~\textbf{Nivel de
 artículo:} una fila es un artículo, no un envío (cerca de 246\,000 envíos en
 262\,317 filas); las métricas son por artículo y ningún \col{SHIPMENT_ID}
-aparece en dos particiones. (b)~\textbf{Casos y controles:} solo la
-exhaustividad y la tasa de falsos positivos se trasladan a la operación sin
-cambios, por lo que el ROC-AUC es válido tal cual, mientras que la precisión,
+aparece en dos particiones. (b)~\textbf{Casos y controles:} la exhaustividad,
+la tasa de falsos positivos y el ROC-AUC no dependen directamente de la
+prevalencia, pero su traslado a la operación requiere que el muestreo preserve
+las distribuciones de puntajes dentro de cada clase. Los artefactos de
+extracción ponen en duda ese supuesto. La precisión,
 el PR-AUC, Recall@$K$ y Precision@$K$ dependen de la prevalencia y describen
 solo la calidad del orden dentro de la muestra; la mejora sobre el azar nunca
 es comparable con producción, pues su techo es $1/\pi$, cerca de 3 en la
 muestra y cerca de 1\,000 en producción. (c)~\textbf{Puntaje sin calibrar:}
-el árbol devuelve un real sin cota; sirve para ordenar y decidir con un umbral,
+el árbol devuelve un real con límites numéricos de protección, no una salida
+restringida a $[0,1]$; sirve para ordenar y decidir con un umbral,
 no como probabilidad. (d)~\textbf{\textit{Holdout} conocido:} el mes de
 prueba ya se había observado al evaluar la RNA y una prueba inicial del GP;
 esta es una comparación con \textit{holdout} fijo, no una validación ciega
@@ -326,10 +335,16 @@ Para cada mes de entrenamiento solo se usan las etiquetas de los meses
 \emph{anteriores} (el primer mes recibe 0,5), de modo que ningún artículo ve
 su propia etiqueta ni la de su mes; los artículos de un envío permanecen
 juntos. Validación y prueba usan los mapas de todo el entrenamiento.
-\item \textbf{Numéricas} (6) y \textbf{día de la semana} (1): imputación por
-la mediana, escalado por mediana y rango intercuartílico de entrenamiento y
-recorte a $\pm 30$.
+\item \textbf{Numéricas} (6) y \textbf{día de la semana} (1): magnitudes del
+artículo y contexto temporal disponibles en la creación.
 \end{itemize}
+Tras concatenar las codificaciones y las variables numéricas, los
+\textbf{19 terminales}, no solo las siete magnitudes numéricas, reciben
+imputación por mediana, centrado por mediana, división por rango
+intercuartílico y recorte a $\pm 30$. Todos los parámetros se ajustan en
+entrenamiento; si el rango intercuartílico es menor que $10^{-9}$ se usa uno.
+Por tanto, los símbolos de las fórmulas finales representan terminales
+transformados y no tasas, frecuencias o montos en su escala original.
 Los nodos internos se toman de diez primitivas: suma, resta, multiplicación,
 división protegida (un divisor con $|b|<10^{-6}$ se sustituye por 1), mínimo
 y máximo, negación, valor absoluto, tangente hiperbólica y logaritmo protegido
@@ -355,13 +370,18 @@ aleatorio y, con él, la población inicial y la secuencia de operadores.
 
 \subsection{Función de aptitud y tratamiento del desbalance}
 
-La aptitud de un árbol es la precisión promedio (PR-AUC) de su puntaje sobre
+La aptitud de un árbol es la precisión promedio (AP) de su puntaje sobre
 las 125\,082 filas de entrenamiento, sin submuestreo, menos una penalización
 lineal por tamaño:
 \begin{equation}
 \mathrm{aptitud}(T) = \mathrm{AP}_{\mathrm{train}}(T) - \lambda\, |T|,
 \end{equation}
-donde $|T|$ es el número de nodos. La precisión promedio es una métrica de
+donde $|T|$ es el número de nodos. En este artículo se mantiene la etiqueta
+PR-AUC del experimento RNA para la métrica calculada mediante
+\texttt{average\_precision\_score}: AP es la suma de precisiones ponderadas
+por incrementos de exhaustividad, sin interpolación. No es el área calculada
+por integración trapezoidal de la curva PR~\cite{sklearn_ap}. La precisión
+promedio es una métrica de
 orden adecuada para clases desbalanceadas~\cite{saito}: no exige umbral y
 valora que las pérdidas queden arriba, que es el uso previsto del agente. La
 muestra ya contiene cerca de un tercio de positivos, por lo que, igual que en
@@ -401,8 +421,8 @@ puntuar la prueba, que no intervino en ninguna elección.
 \end{tabular}
 \end{table}
 
-La configuración elegida fue \texttt{temporal\_180x25\_regularized}:
-codificación temporal, 180 individuos, 25 generaciones y
+La configuración elegida combina codificación temporal, 180 individuos,
+25 generaciones y
 $\lambda = 0{,}0003$. Una búsqueda con dos semillas por configuración no
 demuestra optimalidad; las cinco semillas posteriores cuantifican la variación
 del entrenamiento, no la incertidumbre por muestreo ni por selección de
@@ -462,6 +482,33 @@ validación sobre un puntaje sin calibrar, de modo que exhaustividad, precisión
 y F1 no comparten punto operativo y la comparación principal debe hacerse con
 PR-AUC, ROC-AUC y las métricas en $K$. Y la RNA no se reentrenó: sus cifras
 provienen del informe anterior~\cite{informe_rna}.
+
+\subsection{Reproducibilidad}
+
+Las fuentes, el plan de búsqueda y los resultados agregados están versionados
+en el repositorio de RiskShip:
+\begin{quote}
+\footnotesize
+\url{https://github.com/aristotekean/riskship-rna}
+\end{quote}
+
+Las historias y los resultados están bajo \path{results/gp_full_v1/};
+la versión base revisada es el commit \texttt{b0a9fe2}.
+El entorno registrado usa Python 3.12.3, DEAP 1.4.4,
+NumPy 2.5.3, pandas 2.3.3 y scikit-learn 1.9.1; las dependencias están
+fijadas en \texttt{requirements-gp.txt} y \texttt{uv.lock}. Con el conjunto
+de datos original, la suite se ejecuta desde la raíz del repositorio con:
+
+{\footnotesize
+\begin{verbatim}
+uv run python gp_full_experiment.py --workers 2
+\end{verbatim}
+}
+Las figuras adicionales de este artículo se reconstruyen con
+\texttt{python papers/build\_paper\_figures.py}. El script lee únicamente
+JSON y CSV agregados, no entrena modelos ni necesita los mapas privados de
+categorías. Las semillas y la partición permanecen fijas. Los modelos con
+esos mapas se excluyen del control de versiones por confidencialidad.
 
 \subsection{Resultados}
 
@@ -571,9 +618,11 @@ equivale a
 s = 3x_8 + 2x_7 + x_{10} + x_{15} + \min(x_{14}, x_{15}) \\
 + 2\min(x_1, 0) - 4x_{11} - 2\max(x_{11}, 0),
 \end{multline}
-una suma ponderada en la que el dominio tiene el mayor peso, seguido de la
-instalación; la cantidad de artículos y el valor entran de forma lineal y
-saturada, y el tipo de voluminoso con signo negativo. Doce de los 19
+una expresión en la que el dominio tiene coeficiente positivo lineal 3 y la
+instalación 2; la cantidad de artículos y el valor entran de forma lineal y
+saturada, y el tipo de voluminoso combina términos negativos lineales y
+por tramos. Estos coeficientes sobre terminales transformados no constituyen
+una medida global de importancia ni un efecto causal. Doce de los 19
 terminales no aparecen. En prueba, su matriz de confusión tiene 11\,212
 verdaderos negativos, 3\,295 falsos positivos, 2\,123 falsos negativos y
 4\,459 verdaderos positivos (PR-AUC 0,689, ROC-AUC 0,806). El modelo de
@@ -589,12 +638,15 @@ cantidad de artículos y la tasa histórica de la marca, menos la del tipo de
 20 nodos (generación 12) y a 0,719 con 36 nodos (generación 23), sin cambios
 en las dos últimas generaciones; la aptitud media de la población crece de
 0,404 a 0,663. La corrida evaluó 2\,724 expresiones distintas y reunió 17
-candidatos para la selección por validación. La aptitud de entrenamiento del
-árbol elegido (0,729) supera su PR-AUC de validación (0,682) y de prueba
-(0,689).
+candidatos para la selección por validación. El PR-AUC de entrenamiento del
+árbol elegido es 0,7294; su aptitud penalizada es
+$0{,}7294-0{,}0003\times36\simeq0{,}7186$. Los PR-AUC de validación y de
+prueba son 0,6818 y 0,6887, respectivamente. La Fig.~\ref{fig:evolucion}
+muestra la mejor aptitud y la media poblacional de esta corrida.
 
 \textbf{Costo computacional.} La suma de los tiempos de evolución y selección
-de las 14 corridas (6 de cribado, 5 finales y 5 de ablación) fue de
+de las 14 corridas únicas (6 de cribado, 3 adicionales para completar las
+cinco semillas de la ganadora y 5 de ablación) fue de
 13\,663,8~s con dos procesos simultáneos en una máquina de 12 CPU lógicas. Se
 detectaron 7 intervalos entre generaciones de más de 60~s (hasta 3\,904~s en
 la generación 15 de la semilla 45), cuya causa no se estableció y que pueden
@@ -608,9 +660,10 @@ de la RNA. Los tiempos no se usan para afirmar una ventaja de velocidad.
 
 La Fig.~\ref{fig:comparacion} resume la comparación en PR-AUC, ROC-AUC y
 Recall@20\,\%, con la desviación estándar entre semillas como barra de error.
-Es la única figura de la suite completa disponible en el repositorio: las
-curvas que genera el \textit{notebook} corresponden a su modo de humo (30
-individuos, 3 generaciones) y no se incluyen.
+La Fig.~\ref{fig:evolucion} usa la historia del entrenamiento completo de la
+semilla 44. La Fig.~\ref{fig:arbol} representa el árbol de referencia sin
+dominio, semilla 45, elegido por validación. Ninguna de estas figuras procede
+del modo de humo del \textit{notebook} (30 individuos, 3 generaciones).
 
 % ---------------------------------------------------------------------------
 % IMAGEN 1 (ancho completo, dos columnas).
@@ -624,6 +677,27 @@ individuos, 3 generaciones) y no se incluyen.
 desviación estándar sobre cinco semillas del GP con y sin \col{DOM_DOMAIN_ID},
 frente a la RNA reportada sobre el mismo mes de prueba.}
 \label{fig:comparacion}
+\end{figure*}
+
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=0.92\textwidth]{gp_evolucion_semilla44.png}
+\caption{Evolución de la aptitud en entrenamiento completo para la semilla
+44 con dominio. La línea superior muestra la mejor aptitud histórica y la
+otra la media de la población. La aptitud descuenta la penalización por
+número de nodos; no es una curva de validación ni de prueba.}
+\label{fig:evolucion}
+\end{figure*}
+
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=0.92\textwidth]{gp_arbol_sin_dominio.png}
+\caption{Árbol aprendido de referencia sin dominio (semilla 45, nueve nodos).
+Las hojas son terminales transformados: $x_6$, historia de instalación;
+$x_5$, historia de \textit{picking}; $x_{13}$, cantidad de artículos;
+$x_1$, frecuencia de instalación; $x_8$, historia de marca. El árbol es una
+función de puntaje y no representa probabilidades ni relaciones causales.}
+\label{fig:arbol}
 \end{figure*}
 
 \section{Impactos éticos y sociales}
@@ -669,23 +743,29 @@ fracción revisada (Recall@20\,\% de 0,445 frente a 0,506) y con menos
 precisión en la cima (Precision@10\,\% de 0,810 frente a 0,942). Sin embargo,
 la Precision@1\,\% perfecta de la RNA, que el GP reproduce solo en la semilla
 46, es justamente la cifra bajo sospecha por el artefacto de dominio; la
-ventaja de la RNA en la cima podría estar inflada por la misma variable que el
-GP pondera con el mayor coeficiente.
+ventaja de la RNA en la cima podría estar inflada por la misma variable que
+aparece como término positivo explícito en el GP de referencia.
 
-\textbf{Interpretabilidad.} Es el criterio en el que el GP gana sin discusión.
+\textbf{Interpretabilidad.} El GP entrega una representación simbólica
+explícita y compacta que puede inspeccionarse directamente.
 Los modelos finales tienen entre 7 y 36 nodos (media 20,6~$\pm$~11,6 con
 dominio); el de referencia se reduce a una suma ponderada de siete terminales
 y el de la ablación a una regla lineal de cinco. Un revisor puede leer por qué
 un envío quedó arriba; la RNA, un ensamble de dos redes con
 \textit{embeddings}, solo ofrece importancias por permutación a posteriori.
-Debe matizarse que los terminales son variables transformadas (tasas
+No se realizó una evaluación con usuarios que mida comprensión, tiempo de
+revisión o confianza, por lo que no se afirma una superioridad empírica en
+esas dimensiones. Debe matizarse que los terminales son variables transformadas (tasas
 históricas y frecuencias aprendidas en entrenamiento), no las columnas crudas:
 la fórmula es legible, pero no es una ecuación directa sobre pesos y montos.
 
-\textbf{Costo computacional.} Sin los intervalos anómalos, una corrida del GP
-tarda entre 50 y 85~s en CPU, comparable con la RNA; el GP no requiere GPU ni
-la pila de AutoGluon, pero el cribado añadió seis corridas. Ninguna técnica
-tiene una ventaja de velocidad demostrada.
+\textbf{Costo computacional.} Las tres corridas con dominio sin intervalos
+anómalos registrados tardan entre 50 y 85~s en CPU. No constituyen un
+\textit{benchmark} controlado frente a la RNA. La evaluación usa cinco
+corridas finales con dominio, otras cuatro de configuraciones descartadas
+y cinco sin dominio; las dos primeras semillas de la configuración elegida
+ya forman parte del cribado. El GP no requiere GPU ni la pila de AutoGluon,
+pero ninguna técnica tiene una ventaja de velocidad demostrada.
 
 \textbf{Estabilidad entre semillas.} La RNA es muy estable (desviación de
 PR-AUC de 0,0020); el GP varía 0,0338 con dominio y 0,0160 sin él, y sus
@@ -696,8 +776,8 @@ semillas.
 
 \textbf{Dependencia de \col{DOM_DOMAIN_ID}.} Ambos modelos dependen del
 dominio: es la variable más importante de la RNA (caída de PR-AUC de 0,197 al
-permutarla~\cite{informe_rna}) y la de mayor coeficiente en el árbol de
-referencia; su ablación en el GP cuesta 0,0626 de PR-AUC. La ablación muestra
+permutarla~\cite{informe_rna}) y aparece en el árbol de referencia;
+su ablación en el GP cuesta 0,0626 de PR-AUC. La ablación muestra
 dependencia, no causalidad, y no prueba la ausencia de otros artefactos:
 categorías correlacionadas pueden conservar una señal similar.
 
@@ -707,8 +787,11 @@ Un clasificador simbólico evolucionado con programación genética, entrenado
 solo con información disponible al crear el envío y bajo el mismo protocolo
 temporal que la red neuronal, ordena el riesgo de pérdida de forma útil
 (PR-AUC de 0,639~$\pm$~0,034 frente a 0,312 del azar; ROC-AUC de
-0,773~$\pm$~0,019) pero no alcanza a la RNA (0,750 y 0,824) en ningún criterio
-de desempeño. A cambio ofrece un modelo de decenas de nodos que puede leerse y
+0,773~$\pm$~0,019), pero no alcanza a la RNA (0,750 y 0,824) en PR-AUC,
+ROC-AUC ni en las métricas de ranking evaluadas. La exhaustividad a un umbral
+no define por sí sola esa comparación, porque ambos modelos usan puntos
+operativos distintos. A cambio, el GP ofrece una expresión explícita de
+decenas de nodos que puede inspeccionarse y
 auditarse, y que hace explícita la dependencia de la variable de dominio que
 en la RNA solo se infiere por permutación. La respuesta a la pregunta del
 módulo es parcial: el GP es interpretable, pero no competitivo en precisión
@@ -717,8 +800,13 @@ con la configuración y el presupuesto evaluados.
 El resultado más valioso vuelve a ser metodológico. Mantener la selección de
 configuración, árbol y umbral exclusivamente en validación, sellarla antes de
 puntuar la prueba, repetir cinco semillas y validar de forma independiente que
-las etiquetas y las columnas de fuga no alteran los puntajes permite afirmar
-que la brecha con la RNA es real y no un artefacto de la evaluación. La mejora
+las etiquetas y las columnas de fuga no alteran los puntajes permite
+describir la brecha observada bajo este protocolo. No elimina los posibles
+artefactos de extracción ni prueba significancia o generalización a otras
+cohortes: las desviaciones entre semillas no son intervalos de confianza
+poblacionales. Una evaluación posterior podría estimar incertidumbre de la
+diferencia mediante remuestreo pareado por envío, además de probar nuevos
+meses. La mejora
 frente a la prueba inicial del GP (PR-AUC 0,548, una semilla) cambió a la vez
 codificación, presupuesto y filas de aptitud, y no es atribuible a una sola
 técnica.
@@ -735,10 +823,8 @@ difusa y métodos de ensamble, se evaluarán con este mismo protocolo; un
 ensamble que combine la RNA con el árbol simbólico es un candidato natural
 para unir desempeño e interpretabilidad.
 
+\IEEEtriggeratref{16}
 \begin{thebibliography}{00}
-\bibitem{meli10k} MercadoLibre, Inc., ``Annual Report on Form 10-K for the
-fiscal year ended December 31, 2025,'' U.S. Securities and Exchange
-Commission, 25 feb. 2026.
 \bibitem{bortolini} M. Bortolini \textit{et al.}, ``A deep learning approach to
 predict supply chain delivery delay risk based on macroeconomic indicators: A
 case study in the automotive sector,'' \textit{Applied Sciences}, vol. 14,
@@ -751,7 +837,8 @@ art. 107569, 2020, doi: 10.1016/j.ijpe.2019.107569.
 simulation of logistic processes: Risk assessment with a fuzzy logic
 technique,'' \textit{Simulation}, vol. 94, no. 6, 2018,
 doi: 10.1177/0037549717738351.
-\bibitem{ifac2022} ``Delay prediction to mitigate e-commerce supplier
+\bibitem{ifac2022} D. Wani, R. Singh, V. B. Khanapuri y M. K. Tiwari,
+``Delay prediction to mitigate e-commerce supplier
 disruptions using voting mechanism,'' \textit{IFAC-PapersOnLine}, vol. 55,
 no. 10, pp. 731--736, 2022, doi: 10.1016/j.ifacol.2022.09.495.
 \bibitem{aqlan} F. Aqlan y S. S. Lam, ``A fuzzy-based integrated framework for
@@ -770,6 +857,9 @@ Learning Research}, vol. 13, pp. 2171--2175, 2012.
 \bibitem{saito} T. Saito y M. Rehmsmeier, ``The precision-recall plot is more
 informative than the ROC plot when evaluating binary classifiers on imbalanced
 datasets,'' \textit{PLoS ONE}, vol. 10, no. 3, art. e0118432, 2015.
+\bibitem{sklearn_ap} scikit-learn developers, ``average\_precision\_score,''
+documentación de scikit-learn. Consultado: 20 oct. 2026. [En línea].
+Disponible en: \url{https://scikit-learn.org/stable/modules/generated/sklearn.metrics.average_precision_score.html}.
 \bibitem{informe_rna} K. Bueno S. y L. Portela L., ``RiskShip: Priorización
 inteligente de envíos con riesgo de falla. Solución con redes neuronales,''
 informe de proyecto, Pontificia Universidad Javeriana, Bogotá, 2026.
