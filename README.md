@@ -39,6 +39,7 @@ las reglas que ningún cambio debe romper, en `CLAUDE.md`.
 | `dataset.parquet`, `dataset_dictionary.md` | Dataset generado y su diccionario de columnas y tipos. Se versionan, pero nunca se editan a mano. |
 | `notebooks/rna_shipment_loss.ipynb` | Exploración, limpieza, entrenamiento y evaluación del modelo de pérdida (RNA). |
 | `notebooks/gp_shipment_loss.ipynb` | Notebook autocontenido del enfoque de programación genética. |
+| `notebooks/anfis_shipment_loss.ipynb` | Sistema neuro-difuso (ANFIS, Takagi-Sugeno) con la misma limpieza, partición y métricas que la RNA; exporta sus figuras a `informe/figuras/anfis/`. |
 | `AutogluonModels/` | Artefactos de los modelos entrenados (generados, excluidos del control de versiones). |
 | `export_model.py` | Exporta el mejor predictor por semilla como un único pickle autocontenido en `exports/`. |
 | `predict_risk.py` | Puntúa envíos (JSON o filas del dataset) con el pickle exportado y marca los que superan el umbral de riesgo. |
@@ -345,6 +346,46 @@ de categorías se conservan localmente y se excluyen del control de versiones.
 Enlaces pendientes: la carpeta `results/gp_full_v1/figures/` que menciona
 `README_GP.md` no está en el repositorio; la figura de comparación se enlaza
 desde `papers/figuras/`.
+
+## Sistema neuro-difuso (ANFIS)
+
+El tercer enfoque, en `notebooks/anfis_shipment_loss.ipynb`, entrena un sistema
+de inferencia difusa adaptativo de tipo Takagi-Sugeno en PyTorch: funciones de
+pertenencia gaussianas entrenables por regla y variable, t-norma producto,
+normalización de activaciones y consecuentes lineales, con la salida pasada por
+una sigmoide y entrenada con entropía cruzada. Hereda del notebook RNA la
+limpieza (`preprocess` copiado tal cual), las 13 variables, la partición
+temporal, las cinco semillas (42-46) y las métricas. Las categóricas entran
+como su tasa de pérdida suavizada, estimada solo con entrenamiento y fuera de
+pliegue (pliegues por `SHIPMENT_ID`); los centros de las reglas se inicializan
+con *fuzzy c-means*. El número de reglas se elige por PR-AUC de validación
+(candidatos 8, 16, 32 y 64; seleccionado 32).
+
+| Métrica test (media ± DE, cinco semillas) | ANFIS | RNA reportada |
+|---|---:|---:|
+| PR-AUC | 0,7529 ± 0,0012 | 0,7496 ± 0,0020 |
+| ROC-AUC | 0,8231 ± 0,0008 | 0,8241 ± 0,0020 |
+| Recall (umbral 0,5) | 0,5617 ± 0,0067 | 0,5339 ± 0,0136 |
+| Precisión (umbral 0,5) | 0,7253 ± 0,0073 | 0,7568 ± 0,0157 |
+| F1 (umbral 0,5) | 0,6330 ± 0,0015 | 0,6259 ± 0,0044 |
+| Recall@20 % | 0,5030 ± 0,0023 | 0,5060 ± 0,0024 |
+
+PR-AUC de validación 0,7649 ± 0,0022. Modelo de referencia: semilla 44
+(mejor validación), PR-AUC de test 0,7516, matriz de confusión al 0,5:
+TN 13 140, FP 1 367, FN 2 913, TP 3 669. Cada entrenamiento tarda unos 5 s.
+Las cifras vienen de la ejecución versionada del notebook con sus valores por
+defecto; si se vuelve a correr y cambian, esta tabla se actualiza en el mismo
+commit. La precisión 1,000 en el 1 % y 5 % superiores del ranking comparte la
+sospecha del artefacto `DOM_DOMAIN_ID` descrita más arriba y no debe leerse
+como señal real.
+
+```bash
+uv run jupyter nbconvert --to notebook --execute --inplace notebooks/anfis_shipment_loss.ipynb
+# prueba rápida, fuera de notebooks/ y sin tocar las figuras del informe:
+ANFIS_N_SEEDS=2 ANFIS_MAX_EPOCHS=3 ANFIS_RULE_GRID=4,8 ANFIS_FIGURES_DIR=<output-dir>/figuras \
+  uv run jupyter nbconvert --to notebook --execute notebooks/anfis_shipment_loss.ipynb \
+  --output-dir <output-dir> --output executed.ipynb
+```
 
 ## Cómo reextraer los datos
 
