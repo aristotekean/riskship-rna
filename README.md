@@ -49,7 +49,7 @@ las reglas que ningún cambio debe romper, en `CLAUDE.md`.
 | `docs/GP_ENTRENAMIENTO_COMPLETO.md`, `docs/GP_EXPERIMENTOS.md` | Metodología, resultados y límites del enfoque GP. |
 | `results/gp_full_v1/` | Métricas agregadas por semilla del experimento GP. |
 | `informe/` | Informe del proyecto en formato IEEE (`riskship_rna.tex`, LaTeX, en español) y `figuras/`, exportadas por el notebook. |
-| `papers/` | Artículo del enfoque GP (`riskship_gp.tex`, `riskship_gp.pdf`) y `figuras/`. |
+| `papers/` | Artículos de los enfoques GP (`riskship_gp.tex`, `riskship_gp.pdf`) y ANFIS (`riskship_anfis.tex`, `riskship_anfis.pdf`), sus generadores de figuras y `figuras/`. |
 
 ## Requisitos y entorno
 
@@ -377,7 +377,9 @@ Las cifras vienen de la ejecución versionada del notebook con sus valores por
 defecto; si se vuelve a correr y cambian, esta tabla se actualiza en el mismo
 commit. La precisión 1,000 en el 1 % y 5 % superiores del ranking comparte la
 sospecha del artefacto `DOM_DOMAIN_ID` descrita más arriba y no debe leerse
-como señal real.
+como señal real. El artículo del enfoque, con la comparación de las tres
+técnicas, está en `papers/riskship_anfis.tex` / `papers/riskship_anfis.pdf`
+(ver [Informes y artículos](#informes-y-artículos)).
 
 ```bash
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/anfis_shipment_loss.ipynb
@@ -414,6 +416,7 @@ debe romper.
 |---|---|---|
 | Informe del proyecto (RNA), formato IEEE, en español | `informe/riskship_rna.tex` (figuras en `informe/figuras/`, exportadas por el notebook) | `cd informe && Rscript -e 'tinytex::pdflatex("riskship_rna.tex")'` |
 | Artículo del enfoque GP | `papers/riskship_gp.tex` / `papers/riskship_gp.pdf` (figuras en `papers/figuras/`) | `cd papers && Rscript -e 'tinytex::pdflatex("riskship_gp.tex")'` |
+| Artículo del enfoque ANFIS | `papers/riskship_anfis.tex` / `papers/riskship_anfis.pdf` (figuras `papers/figuras/anfis_*.png`, generadas con `uv run python papers/build_anfis_figures.py`) | `cd papers && Rscript -e 'tinytex::pdflatex("riskship_anfis.tex")'` |
 
 Las figuras del informe las genera el notebook; no se editan a mano. Todo
 número citado en los informes proviene de la ejecución versionada del
